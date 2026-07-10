@@ -1,457 +1,517 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CheckCircle, Package, Truck, MapPin, Clock, ChevronRight, Download, Star, ArrowRight, ShoppingCart, Shield, RotateCcw } from 'lucide-react';
-import { useTranslations } from "next-intl";
+import { CheckCircle, Package, Truck, MapPin, Clock, Star, ArrowRight, Download, Share2, Home, ShoppingBag } from 'lucide-react';
 import { fadeInUp, fadeIn, staggerContainer, scaleIn } from "@/lib/motion";
+import { useTranslations } from "next-intl";
 
-const ORDER = {
-  id: "112-4857293-6748201",
-  date: "December 14, 2024",
-  estimatedDelivery: "December 17, 2024",
-  status: "confirmed",
-  subtotal: 187.97,
-  shipping: 0,
-  tax: 15.04,
-  total: 203.01,
-  paymentMethod: "Visa ending in 4242",
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface OrderItem {
+  id: number;
+  title: string;
+  price: number;
+  quantity: number;
+  image: string;
+  category: string;
+}
+
+interface OrderDetails {
+  orderId: string;
+  placedAt: string;
+  estimatedDelivery: string;
+  items: OrderItem[];
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
   shippingAddress: {
-    name: "Alex Johnson",
-    line1: "1234 Maple Street",
-    line2: "Apt 5B",
-    city: "Seattle",
-    state: "WA",
-    zip: "98101",
-    country: "United States",
-  },
+    name: string;
+    line1: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+  };
+  paymentMethod: string;
+  deliverySpeed: string;
+}
+
+// ─── Mock Order ───────────────────────────────────────────────────────────────
+
+const MOCK_ORDER: OrderDetails = {
+  orderId: "SN-2025-847291",
+  placedAt: "July 10, 2025 at 2:34 PM",
+  estimatedDelivery: "July 15–17, 2025",
   items: [
     {
       id: 1,
       title: "Sony WH-1000XM5 Wireless Noise Cancelling Headphones",
-      price: 89.99,
+      price: 279.99,
       quantity: 1,
       image: "https://m.media-amazon.com/images/I/511c23mDjoL._AC_UF894,1000_QL80_.jpg",
       category: "Electronics",
-      seller: "Sony Official Store",
-      asin: "B09XS7JWHH",
     },
     {
       id: 2,
-      title: "Anker 65W USB-C Charging Station, 4-Port Desktop Charger",
+      title: "Anker 65W USB-C Charging Station (4-Port)",
       price: 45.99,
       quantity: 2,
-      image: "https://m.media-amazon.com/images/I/511c23mDjoL._AC_UF894,1000_QL80_.jpg",
+      image: "/images/anker-usb-charging-station.jpg",
       category: "Electronics",
-      seller: "Anker Direct",
-      asin: "B08T9YB7NH",
     },
     {
       id: 3,
-      title: "Moleskine Classic Notebook, Hard Cover, Large, Ruled",
-      price: 15.99,
+      title: "Moleskine Classic Hardcover Notebook, Large",
+      price: 22.49,
       quantity: 1,
-      image: "/images/moleskine-classic-notebook-ruled.jpg",
-      category: "Books & Stationery",
-      seller: "ShopNow",
-      asin: "B001BKZK9E",
+      image: "/images/moleskine-hardcover-notebook.jpg",
+      category: "Books",
     },
   ],
+  subtotal: 394.46,
+  shipping: 0,
+  tax: 31.56,
+  total: 426.02,
+  shippingAddress: {
+    name: "Alex Johnson",
+    line1: "123 Main Street, Apt 4B",
+    city: "San Francisco",
+    state: "CA",
+    zip: "94102",
+    country: "United States",
+  },
+  paymentMethod: "Visa ending in 4242",
+  deliverySpeed: "Standard Delivery (5–7 business days)",
 };
 
 const RECOMMENDED = [
   {
-    id: 101,
-    title: "Apple AirPods Pro (2nd Generation)",
-    price: 199.99,
-    rating: 4.8,
-    reviews: 42310,
+    id: 10,
+    title: "Apple AirPods Pro (2nd Gen)",
+    price: 189.99,
+    originalPrice: 249.0,
+    rating: 4.9,
+    reviewCount: 34521,
     image: "https://m.media-amazon.com/images/I/61sRKTAfrhL._AC_UF350,350_QL80_.jpg",
   },
   {
-    id: 102,
-    title: "Logitech MX Master 3S Wireless Mouse",
-    price: 79.99,
-    rating: 4.7,
-    reviews: 18540,
-    image: "https://resource.logitech.com/c_fill,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/logitech/en/products/mice/mx-master-3s/2025-update/mx-master-3s-bluetooth-edition-top-view-black-new-1.png",
-  },
-  {
-    id: 103,
-    title: "Kindle Paperwhite (16 GB) — Waterproof E-Reader",
-    price: 139.99,
-    rating: 4.6,
-    reviews: 95200,
-    image: "/images/kindle-paperwhite-e-reader.jpg",
-  },
-  {
-    id: 104,
-    title: "Hydro Flask 32 oz Wide Mouth Water Bottle",
-    price: 44.95,
+    id: 11,
+    title: "Kindle Paperwhite 16 GB",
+    price: 99.99,
+    originalPrice: 139.99,
     rating: 4.8,
-    reviews: 67800,
-    image: "/images/hydro-flask-wide-mouth-bottle.jpg",
+    reviewCount: 56789,
+    image: "https://m.media-amazon.com/images/I/71IcVl9xbYL._AC_UF1000,1000_QL80_.jpg",
+  },
+  {
+    id: 12,
+    title: "Ninja AF101 Air Fryer 4 Quart",
+    price: 79.99,
+    originalPrice: 129.99,
+    rating: 4.7,
+    reviewCount: 41230,
+    image: "https://m.media-amazon.com/images/I/71+8uTMDRFL.jpg",
+  },
+  {
+    id: 13,
+    title: "Instant Pot Duo 7-in-1, 6 Quart",
+    price: 59.99,
+    originalPrice: 99.99,
+    rating: 4.7,
+    reviewCount: 89234,
+    image: "https://m.media-amazon.com/images/I/71Z401LjFFL._AC_UF894,1000_QL80_.jpg",
   },
 ];
 
-const STEPS = [
-  { label: "Order Placed", icon: CheckCircle, done: true },
-  { label: "Processing", icon: Package, done: true },
-  { label: "Shipped", icon: Truck, done: false },
-  { label: "Delivered", icon: MapPin, done: false },
-];
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function StarRating({ rating }: { rating: number }) {
+function formatPrice(n: number): string {
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+
+function StarRating({ rating, count }: { rating: number; count: number }) {
   return (
-    <span className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Star
-          key={s}
-          size={12}
-          className={
-            s <= Math.round(rating)
-              ? "fill-[#FF9900] text-[#FF9900]"
-              : "fill-gray-200 text-gray-200"
-          }
-        />
-      ))}
-    </span>
+    <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
+        {[1, 2, 3, 4, 5].map((s) => (
+          <Star
+            key={s}
+            className={`w-3 h-3 ${
+              s <= Math.round(rating) ? "text-[#10B981] fill-[#10B981]" : "text-gray-300 fill-gray-300"
+            }`}
+          />
+        ))}
+      </div>
+      <span className="text-xs text-gray-500">{count.toLocaleString("en-US")}</span>
+    </div>
   );
 }
 
+// ─── Timeline Step ────────────────────────────────────────────────────────────
+
+function TimelineStep({
+  icon: Icon,
+  label,
+  sublabel,
+  active,
+  done,
+}: {
+  icon: React.ElementType;
+  label: string;
+  sublabel: string;
+  active?: boolean;
+  done?: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1 flex-1">
+      <div
+        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+          done
+            ? "bg-[#10B981] text-white"
+            : active
+            ? "bg-[#0F2027] text-[#10B981] border-2 border-[#10B981]"
+            : "bg-gray-100 text-gray-400"
+        }`}
+      >
+        <Icon className="w-5 h-5" />
+      </div>
+      <span
+        className={`text-xs font-semibold text-center ${
+          done || active ? "text-[#0F2027]" : "text-gray-400"
+        }`}
+      >
+        {label}
+      </span>
+      <span className="text-[10px] text-gray-400 text-center">{sublabel}</span>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function OrderConfirmationPage() {
   const t = useTranslations();
-  const [mounted, setMounted] = useState(false);
+  const [order] = useState<OrderDetails>(MOCK_ORDER);
+  const [confettiDone, setConfettiDone] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setConfettiDone(true), 2000);
+    return () => clearTimeout(timer);
   }, []);
 
-  const itemCount = ORDER.items.reduce((sum, item) => sum + item.quantity, 0);
-
   return (
-    <main className="min-h-screen bg-[#EAEDED]">
-      {/* Hero confirmation banner */}
-      <motion.section
+    <div className="min-h-screen bg-[#F0F9FF]">
+      {/* ── Hero confirmation banner ── */}
+      <motion.div
         variants={fadeIn}
         initial="hidden"
         animate="visible"
-        className="bg-[#131921] text-white py-10 px-4"
+        className="bg-gradient-to-r from-[#0F2027] via-[#1A3A4A] to-[#0F2027] text-white py-10 px-4"
       >
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="max-w-3xl mx-auto text-center">
           <motion.div
             variants={scaleIn}
             initial="hidden"
             animate="visible"
-            className="flex-shrink-0 w-14 h-14 rounded-full bg-[#067D62] flex items-center justify-center shadow-lg"
+            className="flex justify-center mb-4"
           >
-            <CheckCircle size={30} className="text-white" />
+            <div className="w-20 h-20 rounded-full bg-[#10B981]/20 border-4 border-[#10B981] flex items-center justify-center">
+              <CheckCircle className="w-10 h-10 text-[#10B981]" />
+            </div>
           </motion.div>
-          <div>
-            <motion.h1
-              variants={fadeInUp}
-              initial="hidden"
-              animate="visible"
-              className="text-2xl sm:text-3xl font-bold tracking-tight text-white"
-            >
-              Order Confirmed!
-            </motion.h1>
-            <motion.p
-              variants={fadeInUp}
-              initial="hidden"
-              animate="visible"
-              className="text-[#CCCCCC] mt-1 text-sm sm:text-base"
-            >
-              Thank you, {ORDER.shippingAddress.name}. Your order has been placed successfully.
-            </motion.p>
-          </div>
-          <div className="sm:ml-auto text-right">
-            <p className="text-[#AAAAAA] text-xs uppercase tracking-wide">Order ID</p>
-            <p className="text-[#FF9900] font-mono font-semibold text-sm mt-0.5">
-              {ORDER.id}
-            </p>
-            <p className="text-[#AAAAAA] text-xs mt-1">{ORDER.date}</p>
-          </div>
-        </div>
-      </motion.section>
 
+          <motion.h1
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+            className="text-3xl sm:text-4xl font-extrabold mb-2"
+          >
+            Order Confirmed!
+          </motion.h1>
+          <motion.p
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+            className="text-[#10B981] text-lg font-medium mb-1"
+          >
+            Thank you for your purchase.
+          </motion.p>
+          <motion.p
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+            className="text-gray-300 text-sm"
+          >
+            A confirmation email has been sent to your registered address.
+          </motion.p>
+
+          {/* Order ID */}
+          <motion.div
+            variants={scaleIn}
+            initial="hidden"
+            animate="visible"
+            className="mt-6 inline-flex items-center gap-2 bg-white/10 border border-[#10B981]/40 rounded-full px-5 py-2"
+          >
+            <Package className="w-4 h-4 text-[#10B981]" />
+            <span className="text-sm font-mono font-semibold tracking-wide">
+              Order #{order.orderId}
+            </span>
+          </motion.div>
+
+          <p className="text-gray-400 text-xs mt-2">Placed on {order.placedAt}</p>
+        </div>
+      </motion.div>
+
+      {/* ── Main content ── */}
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        {/* Delivery progress tracker */}
+        {/* ── Delivery timeline ── */}
         <motion.div
           variants={fadeInUp}
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-60px" }}
-          className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.1)] p-6"
+          animate="visible"
+          className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
         >
-          <div className="flex items-center gap-2 mb-5">
-            <Truck size={18} className="text-[#FF9900]" />
-            <h2 className="font-bold text-[#131921] text-base">Delivery Status</h2>
-          </div>
-
-          <div className="flex items-center justify-between relative">
-            {/* Progress line */}
-            <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 z-0" />
-            <div
-              className="absolute top-5 left-0 h-0.5 bg-[#067D62] z-0 transition-all duration-700"
-              style={{ width: "40%" }}
+          <h2 className="text-lg font-bold text-[#0F2027] mb-6">Delivery Status</h2>
+          <div className="flex items-start gap-0">
+            <TimelineStep
+              icon={CheckCircle}
+              label="Order Placed"
+              sublabel={order.placedAt}
+              done
             />
-
-            {STEPS.map((step, i) => {
-              const Icon = step.icon;
-              return (
-                <motion.div
-                  key={step.label}
-                  variants={fadeInUp}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  custom={i}
-                  className="relative z-10 flex flex-col items-center gap-2 flex-1"
-                >
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors duration-300 ${
-                      step.done
-                        ? "bg-[#067D62] border-[#067D62]"
-                        : "bg-white border-gray-300"
-                    }`}
-                  >
-                    <Icon
-                      size={18}
-                      className={step.done ? "text-white" : "text-gray-400"}
-                    />
-                  </div>
-                  <span
-                    className={`text-xs font-medium text-center leading-tight ${
-                      step.done ? "text-[#067D62]" : "text-gray-400"
-                    }`}
-                  >
-                    {step.label}
-                  </span>
-                </motion.div>
-              );
-            })}
+            <div className="flex-1 h-0.5 bg-[#10B981] mt-5" />
+            <TimelineStep
+              icon={Package}
+              label="Processing"
+              sublabel="Being prepared"
+              active
+            />
+            <div className="flex-1 h-0.5 bg-gray-200 mt-5" />
+            <TimelineStep
+              icon={Truck}
+              label="Shipped"
+              sublabel="On the way"
+            />
+            <div className="flex-1 h-0.5 bg-gray-200 mt-5" />
+            <TimelineStep
+              icon={Home}
+              label="Delivered"
+              sublabel={order.estimatedDelivery}
+            />
           </div>
 
-          <div className="mt-5 flex items-center gap-2 bg-[#FFF8EE] border border-[#FF9900]/30 rounded-lg px-4 py-3">
-            <Clock size={16} className="text-[#FF9900] flex-shrink-0" />
-            <p className="text-sm text-[#131921]">
-              Estimated delivery:{" "}
-              <span className="font-semibold text-[#067D62]">
-                {ORDER.estimatedDelivery}
-              </span>
+          <div className="mt-5 flex items-center gap-2 bg-[#F0FDF4] border border-[#10B981]/30 rounded-xl px-4 py-3">
+            <Clock className="w-4 h-4 text-[#10B981] flex-shrink-0" />
+            <p className="text-sm text-[#0F2027]">
+              <span className="font-semibold">Estimated Delivery:</span>{" "}
+              <span className="text-[#10B981] font-bold">{order.estimatedDelivery}</span>
             </p>
           </div>
         </motion.div>
 
-        {/* Two-column layout: items + summary */}
+        {/* ── Two-column layout ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Order items */}
-          <motion.div
-            variants={fadeInUp}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            className="lg:col-span-2 bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.1)] p-6"
-          >
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-bold text-[#131921] text-base">
-                Order Items ({itemCount})
-              </h2>
-              <button className="flex items-center gap-1 text-[#007185] hover:text-[#C7511F] text-sm font-medium transition-colors duration-200">
-                <Download size={14} />
-                Invoice
-              </button>
-            </div>
-
-            <motion.ul
-              variants={staggerContainer}
+          {/* Left: Items + Address + Payment */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Order items */}
+            <motion.div
+              variants={fadeInUp}
               initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="divide-y divide-gray-100"
+              animate="visible"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
             >
-              {ORDER.items.map((item) => (
-                <motion.li
-                  key={item.id}
-                  variants={fadeInUp}
-                  className="py-4 flex gap-4"
-                >
-                  <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full h-full object-contain p-1"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src =
-                          "/images/product-placeholder.jpg";
-                      }}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      href={`/products/${item.id}`}
-                      className="text-sm font-medium text-[#007185] hover:text-[#C7511F] line-clamp-2 leading-snug transition-colors duration-150"
-                    >
-                      {item.title}
-                    </Link>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Sold by:{" "}
-                      <span className="text-[#007185]">{item.seller}</span>
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      Category: {item.category}
-                    </p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-gray-500">
-                        Qty: <span className="font-semibold text-[#131921]">{item.quantity}</span>
-                      </span>
-                      <span className="text-sm font-bold text-[#131921]">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </span>
+              <h2 className="text-lg font-bold text-[#0F2027] mb-4">
+                Items in Your Order ({order.items.reduce((s, i) => s + i.quantity, 0)})
+              </h2>
+              <div className="divide-y divide-gray-100">
+                {order.items.map((item) => (
+                  <div key={item.id} className="flex gap-4 py-4 first:pt-0 last:pb-0">
+                    <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex-shrink-0 overflow-hidden">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-contain p-1"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src =
+                            "https://placehold.co/64x64/e2e8f0/94a3b8?text=Item";
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[#0F2027] line-clamp-2 leading-snug">
+                        {item.title}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">{item.category}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-gray-500">Qty: {item.quantity}</span>
+                        <span className="text-sm font-bold text-[#0F2027]">
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </motion.li>
-              ))}
-            </motion.ul>
-          </motion.div>
+                ))}
+              </div>
+            </motion.div>
 
-          {/* Order summary + address */}
-          <motion.div
-            variants={fadeInUp}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            className="space-y-4"
-          >
+            {/* Shipping address */}
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <MapPin className="w-5 h-5 text-[#10B981]" />
+                <h2 className="text-lg font-bold text-[#0F2027]">Shipping Address</h2>
+              </div>
+              <div className="text-sm text-gray-600 space-y-0.5">
+                <p className="font-semibold text-[#0F2027]">{order.shippingAddress.name}</p>
+                <p>{order.shippingAddress.line1}</p>
+                <p>
+                  {order.shippingAddress.city}, {order.shippingAddress.state}{" "}
+                  {order.shippingAddress.zip}
+                </p>
+                <p>{order.shippingAddress.country}</p>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">
+                  Delivery Method
+                </p>
+                <p className="text-sm text-[#0F2027]">{order.deliverySpeed}</p>
+              </div>
+            </motion.div>
+
+            {/* Payment */}
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-5 h-5 rounded bg-[#10B981] flex items-center justify-center">
+                  <CheckCircle className="w-3 h-3 text-white" />
+                </div>
+                <h2 className="text-lg font-bold text-[#0F2027]">Payment</h2>
+              </div>
+              <p className="text-sm text-gray-600">{order.paymentMethod}</p>
+              <p className="text-xs text-[#10B981] font-medium mt-1">Payment successful ✓</p>
+            </motion.div>
+          </div>
+
+          {/* Right: Order summary + actions */}
+          <div className="space-y-6">
             {/* Price summary */}
-            <div className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.1)] p-5">
-              <h2 className="font-bold text-[#131921] text-base mb-4">
-                Order Summary
-              </h2>
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
+            >
+              <h2 className="text-lg font-bold text-[#0F2027] mb-4">Order Summary</h2>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-gray-600">
-                  <span>Items ({itemCount})</span>
-                  <span>${ORDER.subtotal.toFixed(2)}</span>
+                  <span>Subtotal</span>
+                  <span>{formatPrice(order.subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
-                  <span className="text-[#067D62] font-medium">FREE</span>
+                  <span className="text-[#10B981] font-medium">
+                    {order.shipping === 0 ? "FREE" : formatPrice(order.shipping)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>Estimated Tax</span>
-                  <span>${ORDER.tax.toFixed(2)}</span>
+                  <span>Tax</span>
+                  <span>{formatPrice(order.tax)}</span>
                 </div>
-                <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between font-bold text-[#131921] text-base">
-                  <span>Order Total</span>
-                  <span>${ORDER.total.toFixed(2)}</span>
+                <div className="border-t border-gray-100 pt-2 mt-2 flex justify-between font-bold text-[#0F2027] text-base">
+                  <span>Total</span>
+                  <span className="text-[#10B981]">{formatPrice(order.total)}</span>
                 </div>
               </div>
+            </motion.div>
 
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-500 mb-1">Payment method</p>
-                <p className="text-sm font-medium text-[#131921]">
-                  {ORDER.paymentMethod}
-                </p>
-              </div>
-            </div>
+            {/* Action buttons */}
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              className="space-y-3"
+            >
+              <Link
+                href="/orders"
+                className="flex items-center justify-center gap-2 w-full bg-[#10B981] hover:bg-[#059669] text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200"
+              >
+                <Package className="w-4 h-4" />
+                Track Your Order
+              </Link>
+              <Link
+                href="/products"
+                className="flex items-center justify-center gap-2 w-full bg-[#0F2027] hover:bg-[#1A3A4A] text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                Continue Shopping
+              </Link>
+              <button
+                onClick={() => window.print()}
+                className="flex items-center justify-center gap-2 w-full border border-[#10B981] text-[#10B981] hover:bg-[#F0FDF4] font-semibold py-3 px-4 rounded-xl transition-colors duration-200"
+              >
+                <Download className="w-4 h-4" />
+                Download Receipt
+              </button>
+              <button
+                onClick={() =>
+                  navigator.share
+                    ? navigator.share({ title: "My Order", text: `Order #${order.orderId}` })
+                    : undefined
+                }
+                className="flex items-center justify-center gap-2 w-full border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-3 px-4 rounded-xl transition-colors duration-200"
+              >
+                <Share2 className="w-4 h-4" />
+                Share Order
+              </button>
+            </motion.div>
 
-            {/* Shipping address */}
-            <div className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.1)] p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <MapPin size={15} className="text-[#FF9900]" />
-                <h2 className="font-bold text-[#131921] text-sm">
-                  Shipping Address
-                </h2>
-              </div>
-              <address className="not-italic text-sm text-gray-600 leading-relaxed space-y-0.5">
-                <p className="font-semibold text-[#131921]">
-                  {ORDER.shippingAddress.name}
-                </p>
-                <p>{ORDER.shippingAddress.line1}</p>
-                {ORDER.shippingAddress.line2 && (
-                  <p>{ORDER.shippingAddress.line2}</p>
-                )}
-                <p>
-                  {ORDER.shippingAddress.city}, {ORDER.shippingAddress.state}{" "}
-                  {ORDER.shippingAddress.zip}
-                </p>
-                <p>{ORDER.shippingAddress.country}</p>
-              </address>
-            </div>
-
-            {/* Trust badges */}
-            <div className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.1)] p-5 space-y-3">
-              <div className="flex items-start gap-3">
-                <Shield size={16} className="text-[#067D62] flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-semibold text-[#131921]">
-                    Secure Transaction
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Your payment info is encrypted and never stored.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <RotateCcw size={16} className="text-[#067D62] flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-semibold text-[#131921]">
-                    Free Returns
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Return eligible items within 30 days for a full refund.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+            {/* Help card */}
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              className="bg-[#F0FDF4] border border-[#10B981]/30 rounded-2xl p-5"
+            >
+              <p className="text-sm font-semibold text-[#0F2027] mb-1">Need help?</p>
+              <p className="text-xs text-gray-500 mb-3">
+                Our support team is available 24/7 to assist you.
+              </p>
+              <Link
+                href="/help"
+                className="text-sm text-[#10B981] font-semibold hover:underline flex items-center gap-1"
+              >
+                Visit Help Center <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </motion.div>
+          </div>
         </div>
 
-        {/* Action buttons */}
+        {/* ── Recommended products ── */}
         <motion.div
           variants={fadeInUp}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-60px" }}
-          className="flex flex-wrap gap-3"
-        >
-          <Link
-            href="/orders"
-            className="inline-flex items-center gap-2 bg-[#FF9900] hover:bg-[#E88B00] text-[#131921] font-semibold text-sm px-5 py-2.5 rounded-full transition-all duration-200 shadow-[0_2px_8px_rgba(255,153,0,0.3)] hover:shadow-[0_4px_16px_rgba(255,153,0,0.4)]"
-          >
-            <Package size={15} />
-            Track Your Order
-            <ChevronRight size={14} />
-          </Link>
-          <Link
-            href="/products"
-            className="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-[#131921] font-semibold text-sm px-5 py-2.5 rounded-full border border-gray-300 transition-all duration-200"
-          >
-            <ShoppingCart size={15} />
-            Continue Shopping
-          </Link>
-        </motion.div>
-
-        {/* Recommended products */}
-        <motion.section
-          variants={fadeInUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-60px" }}
-          className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.1)] p-6"
+          viewport={{ once: true }}
+          className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
         >
           <div className="flex items-center justify-between mb-5">
-            <h2 className="font-bold text-[#131921] text-lg">
-              Customers Also Bought
-            </h2>
+            <h2 className="text-lg font-bold text-[#0F2027]">You Might Also Like</h2>
             <Link
               href="/products"
-              className="flex items-center gap-1 text-[#007185] hover:text-[#C7511F] text-sm font-medium transition-colors duration-200"
+              className="text-sm text-[#10B981] font-semibold hover:underline flex items-center gap-1"
             >
-              See more
-              <ArrowRight size={14} />
+              See all <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -463,81 +523,76 @@ export default function OrderConfirmationPage() {
             className="grid grid-cols-2 sm:grid-cols-4 gap-4"
           >
             {RECOMMENDED.map((product) => (
-              <motion.div
-                key={product.id}
-                variants={scaleIn}
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className="group cursor-pointer"
-              >
-                <Link href={`/products/${product.id}`}>
-                  <div className="aspect-square rounded-lg overflow-hidden bg-gray-50 border border-gray-100 mb-2">
+              <motion.div key={product.id} variants={scaleIn}>
+                <Link
+                  href={`/product-detail?id=${product.id}`}
+                  className="group block bg-gray-50 rounded-xl border border-gray-100 hover:border-[#10B981]/40 hover:shadow-md transition-all duration-200 overflow-hidden"
+                >
+                  <div className="aspect-square bg-white flex items-center justify-center p-3">
                     <img
                       src={product.image}
                       alt={product.title}
-                      className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).src =
-                          "/images/product-placeholder.jpg";
+                          "https://placehold.co/120x120/e2e8f0/94a3b8?text=Product";
                       }}
                     />
                   </div>
-                  <p className="text-xs text-[#131921] font-medium line-clamp-2 leading-snug group-hover:text-[#C7511F] transition-colors duration-150">
-                    {product.title}
-                  </p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <StarRating rating={product.rating} />
-                    <span className="text-xs text-[#007185]">
-                      ({(product.reviews ?? 0).toLocaleString("en-US")})
-                    </span>
+                  <div className="p-3">
+                    <p className="text-xs font-medium text-[#0F2027] line-clamp-2 leading-snug mb-1">
+                      {product.title}
+                    </p>
+                    <StarRating rating={product.rating} count={product.reviewCount} />
+                    <div className="flex items-baseline gap-1.5 mt-1.5">
+                      <span className="text-sm font-bold text-[#0F2027]">
+                        {formatPrice(product.price)}
+                      </span>
+                      <span className="text-xs text-gray-400 line-through">
+                        {formatPrice(product.originalPrice)}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-sm font-bold text-[#131921] mt-1">
-                    ${product.price.toFixed(2)}
-                  </p>
                 </Link>
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="mt-2 w-full text-xs bg-[#FF9900] hover:bg-[#E88B00] text-[#131921] font-semibold py-1.5 rounded-full transition-colors duration-200"
-                >
-                  Add to Cart
-                </motion.button>
               </motion.div>
             ))}
           </motion.div>
-        </motion.section>
+        </motion.div>
 
-        {/* Help section */}
+        {/* ── Bottom nav ── */}
         <motion.div
           variants={fadeInUp}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-60px" }}
-          className="bg-[#131921] rounded-xl p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          viewport={{ once: true }}
+          className="flex flex-wrap justify-center gap-4 pb-4"
         >
-          <div>
-            <h3 className="font-bold text-base">Need help with your order?</h3>
-            <p className="text-[#AAAAAA] text-sm mt-1">
-              Our support team is available 24/7 to assist you with any questions.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/help"
-              className="inline-flex items-center gap-1.5 bg-[#37475A] hover:bg-[#485769] text-white text-sm font-medium px-4 py-2 rounded-full transition-colors duration-200"
-            >
-              Help Center
-              <ChevronRight size={14} />
-            </Link>
-            <Link
-              href="/returns"
-              className="inline-flex items-center gap-1.5 bg-transparent border border-white/20 hover:border-white/40 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors duration-200"
-            >
-              Returns
-              <ChevronRight size={14} />
-            </Link>
-          </div>
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#10B981] transition-colors"
+          >
+            <Home className="w-4 h-4" /> Home
+          </Link>
+          <Link
+            href="/orders"
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#10B981] transition-colors"
+          >
+            <Package className="w-4 h-4" /> My Orders
+          </Link>
+          <Link
+            href="/products"
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#10B981] transition-colors"
+          >
+            <ShoppingBag className="w-4 h-4" /> Products
+          </Link>
+          <Link
+            href="/help"
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#10B981] transition-colors"
+          >
+            <ArrowRight className="w-4 h-4" /> Help
+          </Link>
         </motion.div>
       </div>
-    </main>
+    </div>
   );
 }

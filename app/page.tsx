@@ -19,8 +19,8 @@ const HERO_SLIDES = [
     cta: "Shop Electronics",
     href: "/products?category=electronics",
     image: "https://helios-i.mashable.com/imagery/articles/05X1FliiK9hHcTgSRjzBf2b/hero-image.fill.size_1248x702.v1772448992.jpg",
-    accent: "#FF9900",
-    bg: "from-[#131921] to-[#1e2d3d]",
+    accent: "#10B981",
+    bg: "from-[#0F2027] to-[#1A3A4A]",
   },
   {
     id: 2,
@@ -30,8 +30,8 @@ const HERO_SLIDES = [
     cta: "Explore Fashion",
     href: "/products?category=clothing",
     image: "https://heroshopsf.com/cdn/shop/files/VALL8620_1200x.progressive.jpg?v=1775163428",
-    accent: "#FF9900",
-    bg: "from-[#1a1a2e] to-[#16213e]",
+    accent: "#10B981",
+    bg: "from-[#0F2027] to-[#1A3A4A]",
   },
   {
     id: 3,
@@ -41,8 +41,8 @@ const HERO_SLIDES = [
     cta: "Shop Home",
     href: "/products?category=home",
     image: "https://m.media-amazon.com/images/I/511c23mDjoL._AC_UF894,1000_QL80_.jpg",
-    accent: "#FF9900",
-    bg: "from-[#1c1c1c] to-[#2d2d2d]",
+    accent: "#10B981",
+    bg: "from-[#1A3A4A] to-[#2D5A6E]",
   },
 ];
 
@@ -123,763 +123,793 @@ const FEATURED_PRODUCTS = [
     id: 7,
     title: "Samsung 65\" 4K QLED Smart TV",
     price: 699.99,
-    originalPrice: 1099.99,
+    originalPrice: 999.99,
     rating: 4.6,
-    reviewCount: 8923,
-    image: "https://bjs.scene7.com/is/image/bjs/345905?$bjs-Zoom$",
-    badge: "36% Off",
+    reviewCount: 8932,
+    image: "https://m.media-amazon.com/images/I/71Z401LjFFL._AC_UF894,1000_QL80_.jpg",
+    badge: "30% Off",
     category: "Electronics",
     prime: true,
   },
   {
     id: 8,
-    title: "Adidas Ultraboost 22 Running Shoes",
-    price: 119.99,
-    originalPrice: 190.00,
-    rating: 4.6,
+    title: "Dyson V15 Detect Cordless Vacuum",
+    price: 549.99,
+    originalPrice: 749.99,
+    rating: 4.8,
     reviewCount: 15678,
-    image: "https://cdn11.bigcommerce.com/s-4d06e/images/stencil/1024x1024/products/20222/32336/Screenshot_2024-04-15_at_13-55-19_s3.webp_WEBP_Image_1800_1800_pixels_Scaled_51__95484.1713207341.png?c=2",
-    badge: "New",
-    category: "Sports",
+    image: "https://m.media-amazon.com/images/I/61sRKTAfrhL._AC_UF350,350_QL80_.jpg",
+    badge: "Editor's Choice",
+    category: "Home & Kitchen",
     prime: true,
   },
 ];
 
-const DEALS_OF_DAY = [
-  {
-    id: 1,
-    title: "Anker 65W USB-C Charger",
-    price: 25.99,
-    originalPrice: 45.99,
-    discount: 43,
-    image: "https://i5.walmartimages.com/seo/Anker-Nano-II-USB-C-Charger-735-Charger-GaN-II-Foldable-Wall-Charger-65W-PPS-3-Port-Fast-Charging_4413ae84-8081-4ea6-b2d4-e71edaeb53b2.b43e68d0e9f4c522a25c57657c11a183.jpeg",
-    timeLeft: "6h 23m",
-    claimed: 78,
-  },
-  {
-    id: 2,
-    title: "Logitech MX Master 3S Mouse",
-    price: 69.99,
-    originalPrice: 99.99,
-    discount: 30,
-    image: "https://resource.logitech.com/c_fill,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/logitech/en/products/mice/mx-master-3s/2025-update/mx-master-3s-bluetooth-edition-top-view-black-new-1.png",
-    timeLeft: "3h 45m",
-    claimed: 62,
-  },
-  {
-    id: 3,
-    title: "Dyson V8 Cordless Vacuum",
-    price: 249.99,
-    originalPrice: 419.99,
-    discount: 40,
-    image: "https://cb.scene7.com/is/image/Crate/CB_F24_DV_01_Vert_314_001",
-    timeLeft: "11h 10m",
-    claimed: 91,
-  },
-  {
-    id: 4,
-    title: "Fitbit Charge 6 Fitness Tracker",
-    price: 99.95,
-    originalPrice: 159.95,
-    discount: 37,
-    image: "https://m.media-amazon.com/images/I/61ZtqtvoD2L._AC_UF894,1000_QL80_.jpg",
-    timeLeft: "8h 55m",
-    claimed: 55,
-  },
+const DEAL_OF_DAY = {
+  id: 99,
+  title: "Bose QuietComfort 45 Bluetooth Wireless Noise Cancelling Headphones",
+  price: 199.99,
+  originalPrice: 329.00,
+  discount: 39,
+  rating: 4.7,
+  reviewCount: 22341,
+  image: "https://m.media-amazon.com/images/I/511c23mDjoL._AC_UF894,1000_QL80_.jpg",
+  claimed: 73,
+  endsAt: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
+};
+
+const TRUST_BADGES = [
+  { icon: Truck, label: "Free Shipping", sub: "On orders over $35" },
+  { icon: RotateCcw, label: "Easy Returns", sub: "30-day return policy" },
+  { icon: Shield, label: "Secure Payment", sub: "256-bit SSL encryption" },
+  { icon: Headphones, label: "24/7 Support", sub: "Always here to help" },
 ];
 
-const TESTIMONIALS = [
-  {
-    id: 1,
-    name: "Sarah M.",
-    location: "New York, NY",
-    rating: 5,
-    text: "ShopNow has completely changed how I shop online. The delivery is incredibly fast and every product I've ordered has been exactly as described. The return process is seamless too.",
-    product: "Sony WH-1000XM5",
-    avatar: "https://mormonartist.net/images/interviews/sarah-m-eden/sarah-m-eden-01.jpg",
-    verified: true,
-  },
-  {
-    id: 2,
-    name: "James T.",
-    location: "Austin, TX",
-    rating: 5,
-    text: "I've been a Prime member for two years and the value is unbeatable. Free two-day shipping on thousands of items, exclusive deals, and the customer service is always top-notch.",
-    product: "Kindle Paperwhite",
-    avatar: "https://s3.amazonaws.com/arc-authors/cmg/8adde958-cd42-477c-9467-0ee150778a71.png",
-    verified: true,
-  },
-  {
-    id: 3,
-    name: "Priya K.",
-    location: "San Francisco, CA",
-    rating: 5,
-    text: "The product selection is massive and the prices are consistently the best I can find anywhere. I especially love the detailed reviews that help me make confident purchasing decisions.",
-    product: "Instant Pot Duo",
-    avatar: "https://cdn.shopify.com/s/files/1/0320/7168/0140/files/free-2-day-delivery.jpg?v=1685733210",
-    verified: true,
-  },
-];
-
-const VALUE_PROPS = [
-  {
-    icon: Truck,
-    title: "Free Two-Day Delivery",
-    desc: "Prime members get free two-day shipping on millions of eligible items with no minimum order.",
-  },
-  {
-    icon: Shield,
-    title: "Buyer Protection",
-    desc: "Every purchase is protected. If something goes wrong, we make it right — guaranteed.",
-  },
-  {
-    icon: RotateCcw,
-    title: "Easy 30-Day Returns",
-    desc: "Not satisfied? Return most items within 30 days for a full refund, no questions asked.",
-  },
-  {
-    icon: Headphones,
-    title: "24/7 Customer Support",
-    desc: "Our dedicated support team is available around the clock to help with any issue.",
-  },
-];
-
-const STATS = [
-  { value: "300M+", label: "Products Available" },
-  { value: "200M+", label: "Prime Members Worldwide" },
-  { value: "185+", label: "Countries Served" },
-  { value: "4.8★", label: "Average Customer Rating" },
-];
+const CATEGORY_ICONS: Record<string, string> = {
+  electronics: "⚡",
+  clothing: "👗",
+  jewelry: "💎",
+  home: "🏠",
+  books: "📚",
+  sports: "⚽",
+  toys: "🧸",
+  beauty: "✨",
+};
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function StarRating({ rating, count }: { rating: number; count: number }) {
+function StarRating({ rating, count }: { rating: number; count?: number }) {
   const full = Math.floor(rating);
   const half = rating - full >= 0.5;
   return (
     <div className="flex items-center gap-1">
-      <div className="flex items-center">
+      <div className="flex items-center gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            className={`w-3.5 h-3.5 ${
-              i < full
-                ? "fill-[#FF9900] text-[#FF9900]"
-                : i === full && half
-                ? "fill-[#FF9900]/50 text-[#FF9900]"
-                : "fill-gray-200 text-gray-200"
-            }`}
-          />
+          <svg key={i} className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="none">
+            {i < full ? (
+              <polygon
+                points="10,1 12.9,7 19.5,7.6 14.5,12 16.2,18.5 10,15 3.8,18.5 5.5,12 0.5,7.6 7.1,7"
+                fill="#10B981"
+              />
+            ) : i === full && half ? (
+              <>
+                <defs>
+                  <linearGradient id={`half-star-${i}`}>
+                    <stop offset="50%" stopColor="#10B981" />
+                    <stop offset="50%" stopColor="#D1D5DB" />
+                  </linearGradient>
+                </defs>
+                <polygon
+                  points="10,1 12.9,7 19.5,7.6 14.5,12 16.2,18.5 10,15 3.8,18.5 5.5,12 0.5,7.6 7.1,7"
+                  fill={`url(#half-star-${i})`}
+                />
+              </>
+            ) : (
+              <polygon
+                points="10,1 12.9,7 19.5,7.6 14.5,12 16.2,18.5 10,15 3.8,18.5 5.5,12 0.5,7.6 7.1,7"
+                fill="#D1D5DB"
+              />
+            )}
+          </svg>
         ))}
       </div>
-      <span className="text-xs text-[#007185] hover:text-[#C7511F] cursor-pointer">
-        {count.toLocaleString("en-US")}
-      </span>
+      {count !== undefined && (
+        <span className="text-xs text-[#10B981] font-medium">
+          {count.toLocaleString("en-US")}
+        </span>
+      )}
     </div>
   );
 }
 
-function ProductCard({ product, index }: { product: typeof FEATURED_PRODUCTS[0]; index: number }) {
+function ProductCard({
+  product,
+  onAddToCart,
+}: {
+  product: (typeof FEATURED_PRODUCTS)[0];
+  onAddToCart: (id: number) => void;
+}) {
   const [wishlisted, setWishlisted] = useState(false);
-  const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const discount = Math.round(
+    ((product.originalPrice - product.price) / product.originalPrice) * 100
+  );
 
-  const addToCart = () => {
-    try {
-      const stored = localStorage.getItem("shopnow-cart");
-      const cart = stored ? JSON.parse(stored) : [];
-      const existing = cart.find((i: { id: number }) => i.id === product.id);
-      if (existing) {
-        existing.quantity = (existing.quantity ?? 1) + 1;
-      } else {
-        cart.push({ ...product, quantity: 1 });
-      }
-      localStorage.setItem("shopnow-cart", JSON.stringify(cart));
-      window.dispatchEvent(new Event("cart-updated"));
-    } catch {
-      // silent
-    }
+  const handleAddToCart = () => {
+    onAddToCart(product.id);
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
   };
 
   return (
     <motion.div
       variants={scaleIn}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="group bg-white rounded-xl border border-black/5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_-4px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col"
+      className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden group flex flex-col border border-gray-100"
     >
-      <div className="relative overflow-hidden bg-gray-50 aspect-square">
+      {/* Image */}
+      <div className="relative overflow-hidden bg-[#F0F7F4] aspect-square">
         <img
           src={product.image}
           alt={product.title}
-          className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src =
+              "https://via.placeholder.com/300x300?text=Product";
+          }}
         />
+        {/* Badge */}
         {product.badge && (
-          <span className="absolute top-2 left-2 bg-[#CC0C39] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+          <span className="absolute top-2 left-2 bg-[#10B981] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
             {product.badge}
           </span>
         )}
+        {/* Discount */}
+        {discount > 0 && (
+          <span className="absolute top-2 right-2 bg-[#3B82F6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            -{discount}%
+          </span>
+        )}
+        {/* Wishlist */}
         <button
           onClick={() => setWishlisted((w) => !w)}
-          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+          className="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:scale-110"
           aria-label="Add to wishlist"
         >
           <Heart
-            className={`w-3.5 h-3.5 transition-colors ${wishlisted ? "fill-red-500 text-red-500" : "text-gray-400"}`}
+            className={`w-4 h-4 ${
+              wishlisted ? "fill-red-500 text-red-500" : "text-gray-400"
+            }`}
           />
         </button>
-        {product.prime && (
-          <div className="absolute bottom-2 left-2">
-            <span className="bg-[#00A8E1] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded tracking-wider">
-              prime
-            </span>
-          </div>
-        )}
       </div>
 
-      <div className="p-3 flex flex-col flex-1 gap-1.5">
-        <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">{product.category}</p>
-        <Link href={`/products/${product.id}`}>
-          <h3 className="text-sm font-medium text-gray-900 leading-snug line-clamp-2 hover:text-[#C7511F] transition-colors">
+      {/* Info */}
+      <div className="p-4 flex flex-col flex-1 gap-2">
+        {/* Prime badge */}
+        {product.prime && (
+          <span className="inline-flex items-center gap-1 bg-[#3B82F6] text-white text-[10px] font-bold px-2 py-0.5 rounded w-fit">
+            ✓ Prime
+          </span>
+        )}
+
+        <Link href={`/product-detail?id=${product.id}`}>
+          <h3 className="text-sm font-medium text-gray-800 line-clamp-2 hover:text-[#10B981] transition-colors leading-snug">
             {product.title}
           </h3>
         </Link>
+
         <StarRating rating={product.rating} count={product.reviewCount} />
-        <div className="flex items-baseline gap-1.5 mt-auto pt-1">
+
+        {/* Price */}
+        <div className="flex items-baseline gap-2 mt-auto">
           <span className="text-lg font-bold text-gray-900">
             ${product.price.toFixed(2)}
           </span>
           <span className="text-xs text-gray-400 line-through">
             ${product.originalPrice.toFixed(2)}
           </span>
-          <span className="text-xs font-semibold text-[#CC0C39]">-{discount}%</span>
         </div>
+
+        {/* Add to Cart */}
         <button
-          onClick={addToCart}
-          className="mt-1 w-full bg-[#FF9900] hover:bg-[#e68900] text-[#131921] text-xs font-bold py-2 rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95"
+          onClick={handleAddToCart}
+          className={`w-full py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+            addedToCart
+              ? "bg-[#059669] text-white"
+              : "bg-[#10B981] hover:bg-[#059669] text-white"
+          }`}
         >
-          <ShoppingCart className="w-3.5 h-3.5" />
-          Add to Cart
+          {addedToCart ? (
+            <><CheckCircle className="w-4 h-4" /> Added!</>
+          ) : (
+            <><ShoppingCart className="w-4 h-4" /> Add to Cart</>
+          )}
         </button>
       </div>
     </motion.div>
   );
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+function CountdownTimer({ endsAt }: { endsAt: string }) {
+  const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0 });
+
+  useEffect(() => {
+    const tick = () => {
+      const diff = Math.max(0, new Date(endsAt).getTime() - Date.now());
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setTimeLeft({ h, m, s });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [endsAt]);
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  return (
+    <div className="flex items-center gap-1.5">
+      {([timeLeft.h, timeLeft.m, timeLeft.s] as number[]).map((val, i) => (
+        <>
+          <div
+            key={i}
+            className="bg-[#10B981] text-white rounded-md px-2.5 py-1 text-lg font-mono font-bold min-w-[2.5rem] text-center"
+          >
+            {pad(val)}
+          </div>
+          {i < 2 && (
+            <span key={`sep-${i}`} className="text-[#10B981] font-bold text-xl">
+              :
+            </span>
+          )}
+        </>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
   const t = useTranslations();
-  const shouldReduceMotion = useReducedMotion();
-  const [heroIndex, setHeroIndex] = useState(0);
-  const [heroAutoplay, setHeroAutoplay] = useState(true);
-  const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [cartCount, setCartCount] = useState(0);
+  const [toastMsg, setToastMsg] = useState("");
+  const slideTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Hero autoplay
+  // Auto-advance hero
   useEffect(() => {
-    if (!heroAutoplay) return;
-    autoplayRef.current = setInterval(() => {
-      setHeroIndex((i) => (i + 1) % HERO_SLIDES.length);
-    }, 5000);
+    slideTimer.current = setInterval(() => {
+      setCurrentSlide((s) => (s + 1) % HERO_SLIDES.length);
+    }, 5500);
     return () => {
-      if (autoplayRef.current) clearInterval(autoplayRef.current);
+      if (slideTimer.current) clearInterval(slideTimer.current);
     };
-  }, [heroAutoplay, heroIndex]);
+  }, []);
 
-  const goHero = (idx: number) => {
-    setHeroIndex(idx);
-    setHeroAutoplay(false);
-    setTimeout(() => setHeroAutoplay(true), 8000);
+  // Sync cart count
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const stored = localStorage.getItem("shopnow-cart");
+        if (stored) {
+          const items = JSON.parse(stored) as Array<{ quantity: number }>;
+          setCartCount(items.reduce((s, i) => s + (i.quantity ?? 0), 0));
+        }
+      } catch {
+        // ignore
+      }
+    };
+    sync();
+    window.addEventListener("storage", sync);
+    window.addEventListener("cart-updated", sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("cart-updated", sync);
+    };
+  }, []);
+
+  const handleAddToCart = (productId: number) => {
+    const product = FEATURED_PRODUCTS.find((p) => p.id === productId);
+    if (!product) return;
+    try {
+      const stored = localStorage.getItem("shopnow-cart");
+      const cart: Array<{
+        id: number;
+        title: string;
+        price: number;
+        image: string;
+        quantity: number;
+        category: string;
+        description: string;
+        rating: { rate: number; count: number };
+      }> = stored ? JSON.parse(stored) : [];
+      const existing = cart.find((i) => i.id === productId);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({
+          id: product.id,
+          title: product.title,
+          price: product.price,
+          image: product.image,
+          quantity: 1,
+          category: product.category,
+          description: "",
+          rating: { rate: product.rating, count: product.reviewCount },
+        });
+      }
+      localStorage.setItem("shopnow-cart", JSON.stringify(cart));
+      window.dispatchEvent(new Event("cart-updated"));
+      setCartCount((c) => c + 1);
+      setToastMsg(`"${product.title.slice(0, 30)}…" added to cart!`);
+      setTimeout(() => setToastMsg(""), 3000);
+    } catch {
+      // ignore
+    }
   };
 
-  const slide = HERO_SLIDES[heroIndex] ?? HERO_SLIDES[0];
+  const slide = HERO_SLIDES[currentSlide];
 
   return (
-    <main className="min-h-screen bg-[#EAEDED]">
+    <div className="min-h-screen bg-[#F0F7F4]">
+      {/* ── Toast ── */}
+      {toastMsg && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#0F2027] text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-sm font-medium animate-fade-in">
+          <CheckCircle className="w-4 h-4 text-[#10B981]" />
+          {toastMsg}
+        </div>
+      )}
 
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section id="hero" className="relative overflow-hidden">
-        <motion.div
-          key={slide.id}
-          initial={shouldReduceMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          className={`relative bg-gradient-to-r ${slide.bg} min-h-[420px] md:min-h-[500px] flex items-center`}
+      {/* ══════════════════════════════════════════════════════════════
+          HERO CAROUSEL
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden" aria-label="Promotional banners">
+        <div
+          className={`relative bg-gradient-to-r ${slide.bg} min-h-[420px] md:min-h-[520px] flex items-center transition-all duration-700`}
         >
           {/* Background image */}
           <div className="absolute inset-0">
             <img
               src={slide.image}
               alt=""
+              aria-hidden
               className="w-full h-full object-cover opacity-20"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
             />
-            <div className={`absolute inset-0 bg-gradient-to-r ${slide.bg} opacity-80`} />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
           </div>
 
-          <div className="relative z-10 max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 w-full py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
-            {/* Text */}
+          {/* Content */}
+          <div className="relative z-10 max-w-[1500px] mx-auto px-6 md:px-12 py-16 flex flex-col md:flex-row items-center gap-10 w-full">
             <motion.div
-              key={`text-${slide.id}`}
-              initial={shouldReduceMotion ? false : { opacity: 0, x: -40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="flex flex-col gap-5"
+              key={slide.id}
+              variants={slideInLeft}
+              initial="hidden"
+              animate="visible"
+              className="flex-1 max-w-xl"
             >
-              <span className="inline-flex items-center gap-2 bg-[#FF9900]/20 border border-[#FF9900]/40 text-[#FF9900] text-xs font-bold px-3 py-1.5 rounded-full w-fit uppercase tracking-wider">
-                <Zap className="w-3 h-3" />
+              <span
+                className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
+                style={{ backgroundColor: slide.accent, color: "#fff" }}
+              >
                 {slide.badge}
               </span>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight text-balance">
+              <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight mb-4">
                 {slide.headline}
               </h1>
-              <p className="text-gray-300 text-lg leading-relaxed max-w-md text-pretty">
+              <p className="text-gray-300 text-base md:text-lg mb-8 leading-relaxed">
                 {slide.subline}
               </p>
-              <div className="flex flex-wrap gap-3 pt-2">
+              <div className="flex flex-wrap gap-3">
                 <Link
                   href={slide.href}
-                  className="inline-flex items-center gap-2 bg-[#FF9900] hover:bg-[#e68900] text-[#131921] font-bold px-6 py-3 rounded-lg transition-all duration-200 hover:shadow-[0_4px_20px_rgba(255,153,0,0.4)] active:scale-95 text-sm"
+                  className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#059669] text-white font-bold px-6 py-3 rounded-xl transition-colors duration-200 shadow-lg"
                 >
-                  {slide.cta}
-                  <ArrowRight className="w-4 h-4" />
+                  {slide.cta} <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 text-sm backdrop-blur-sm"
+                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3 rounded-xl border border-white/30 transition-colors duration-200"
                 >
                   Browse All
                 </Link>
               </div>
             </motion.div>
 
-            {/* Hero image */}
+            {/* Right image panel */}
             <motion.div
               key={`img-${slide.id}`}
-              initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
-              className="hidden md:flex justify-center items-center"
+              variants={slideInRight}
+              initial="hidden"
+              animate="visible"
+              className="hidden md:flex flex-1 justify-center items-center"
             >
-              <div className="relative w-80 h-80 lg:w-96 lg:h-96">
-                <div className="absolute inset-0 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10" />
+              <div className="relative w-72 h-72 rounded-2xl overflow-hidden shadow-2xl border border-white/10">
                 <img
                   src={slide.image}
                   alt={slide.headline}
-                  className="relative z-10 w-full h-full object-contain p-6 rounded-2xl"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      "https://via.placeholder.com/300x300?text=Sale";
+                  }}
                 />
               </div>
             </motion.div>
           </div>
 
           {/* Slide controls */}
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
-            {HERO_SLIDES.map((s, i) => (
+          <button
+            onClick={() =>
+              setCurrentSlide(
+                (s) => (s - 1 + HERO_SLIDES.length) % HERO_SLIDES.length
+              )
+            }
+            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center transition-colors"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() =>
+              setCurrentSlide((s) => (s + 1) % HERO_SLIDES.length)
+            }
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center transition-colors"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+          {/* Dots */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+            {HERO_SLIDES.map((_, i) => (
               <button
-                key={s.id}
-                onClick={() => goHero(i)}
-                className={`transition-all duration-300 rounded-full ${
-                  i === heroIndex
-                    ? "w-6 h-2 bg-[#FF9900]"
-                    : "w-2 h-2 bg-white/40 hover:bg-white/70"
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                  i === currentSlide
+                    ? "bg-[#10B981] scale-125"
+                    : "bg-white/40 hover:bg-white/70"
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
               />
             ))}
           </div>
-
-          {/* Prev/Next */}
-          <button
-            onClick={() => goHero((heroIndex - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 border border-white/10 flex items-center justify-center text-white transition-all duration-200 backdrop-blur-sm"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => goHero((heroIndex + 1) % HERO_SLIDES.length)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 border border-white/10 flex items-center justify-center text-white transition-all duration-200 backdrop-blur-sm"
-            aria-label="Next slide"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </motion.div>
+        </div>
       </section>
 
-      {/* ── CATEGORIES ───────────────────────────────────────────────────── */}
-      <section className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-60px" }}
-        >
-          <motion.div variants={fadeInUp} className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Shop by Category</h2>
-            <Link
-              href="/products"
-              className="text-sm text-[#007185] hover:text-[#C7511F] font-medium flex items-center gap-1 transition-colors"
-            >
-              See all <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </motion.div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-            {CATEGORIES.map((cat) => (
-              <motion.div key={cat.slug} variants={scaleIn}>
-                <Link
-                  href={`/products?category=${cat.slug}`}
-                  className="group flex flex-col items-center gap-2 bg-white rounded-xl p-3 border border-black/5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] hover:border-[#FF9900]/30 transition-all duration-200"
-                >
-                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-50">
-                    <img
-                      src={cat.image}
-                      alt={cat.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
-                  </div>
-                  <span className="text-[11px] font-semibold text-gray-700 text-center leading-tight group-hover:text-[#C7511F] transition-colors">
-                    {cat.name}
-                  </span>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
-
-      {/* ── DEALS OF THE DAY ─────────────────────────────────────────────── */}
-      <section id="deals" className="bg-white py-10">
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ══════════════════════════════════════════════════════════════
+          TRUST BADGES
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-white border-b border-gray-100">
+        <div className="max-w-[1500px] mx-auto px-4 py-5">
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
+            viewport={{ once: true }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4"
           >
-            <motion.div variants={fadeInUp} className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl font-bold text-gray-900">Deals of the Day</h2>
-                <span className="flex items-center gap-1.5 bg-[#CC0C39] text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                  <Clock className="w-3 h-3" />
-                  Ends soon
-                </span>
-              </div>
-              <Link
-                href="/products"
-                className="text-sm text-[#007185] hover:text-[#C7511F] font-medium flex items-center gap-1 transition-colors"
+            {TRUST_BADGES.map((badge) => (
+              <motion.div
+                key={badge.label}
+                variants={fadeInUp}
+                className="flex items-center gap-3 p-3"
               >
-                See all deals <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </motion.div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {DEALS_OF_DAY.map((deal) => (
-                <motion.div
-                  key={deal.id}
-                  variants={fadeInUp}
-                  whileHover={{ y: -3, transition: { duration: 0.2 } }}
-                  className="group border border-black/5 rounded-xl overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_-4px_rgba(0,0,0,0.08)] bg-white hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.15)] transition-all duration-300"
-                >
-                  <div className="relative bg-gray-50 aspect-square overflow-hidden">
-                    <img
-                      src={deal.image}
-                      alt={deal.title}
-                      className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute top-2 left-2 bg-[#CC0C39] text-white text-xs font-extrabold px-2 py-0.5 rounded-full">
-                      -{deal.discount}%
-                    </div>
-                  </div>
-                  <div className="p-3 space-y-2">
-                    <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug">
-                      {deal.title}
-                    </h3>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-lg font-bold text-gray-900">${deal.price.toFixed(2)}</span>
-                      <span className="text-xs text-gray-400 line-through">${deal.originalPrice.toFixed(2)}</span>
-                    </div>
-                    {/* Progress bar */}
-                    <div>
-                      <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                        <span className="font-medium text-[#CC0C39]">{deal.claimed}% claimed</span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-2.5 h-2.5" />
-                          {deal.timeLeft}
-                        </span>
-                      </div>
-                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-[#CC0C39] rounded-full transition-all duration-500"
-                          style={{ width: `${deal.claimed}%` }}
-                        />
-                      </div>
-                    </div>
-                    <button className="w-full bg-[#FF9900] hover:bg-[#e68900] text-[#131921] text-xs font-bold py-2 rounded-lg transition-all duration-200 active:scale-95">
-                      Add to Cart
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                <div className="w-10 h-10 rounded-full bg-[#F0F7F4] flex items-center justify-center flex-shrink-0">
+                  <badge.icon className="w-5 h-5 text-[#10B981]" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">{badge.label}</p>
+                  <p className="text-xs text-gray-500">{badge.sub}</p>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>
 
-      {/* ── FEATURED PRODUCTS ────────────────────────────────────────────── */}
-      <section className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* ══════════════════════════════════════════════════════════════
+          CATEGORIES
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="max-w-[1500px] mx-auto px-4 py-10">
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="flex items-center justify-between mb-6"
+        >
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+            Shop by Category
+            <span className="block w-12 h-1 bg-[#10B981] rounded-full mt-1" />
+          </h2>
+          <Link
+            href="/products"
+            className="text-sm text-[#10B981] hover:text-[#059669] font-semibold flex items-center gap-1"
+          >
+            See all <ChevronRight className="w-4 h-4" />
+          </Link>
+        </motion.div>
+
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-60px" }}
+          viewport={{ once: true }}
+          className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-3"
         >
-          <motion.div variants={fadeInUp} className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Featured Products</h2>
-              <p className="text-sm text-gray-500 mt-0.5">Handpicked favorites across every category</p>
-            </div>
-            <Link
-              href="/products"
-              className="text-sm text-[#007185] hover:text-[#C7511F] font-medium flex items-center gap-1 transition-colors"
-            >
-              View all <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </motion.div>
-
-          <motion.div
-            variants={staggerContainer}
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4"
-          >
-            {FEATURED_PRODUCTS.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
-            ))}
-          </motion.div>
+          {CATEGORIES.map((cat) => (
+            <motion.div key={cat.slug} variants={scaleIn}>
+              <Link
+                href={`/products?category=${cat.slug}`}
+                className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl hover:shadow-md hover:border-[#10B981] border border-transparent transition-all duration-200 group"
+              >
+                <div className="w-12 h-12 rounded-full bg-[#F0F7F4] flex items-center justify-center text-2xl group-hover:bg-[#10B981]/10 transition-colors">
+                  {CATEGORY_ICONS[cat.slug] ?? "🛍️"}
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center leading-tight group-hover:text-[#10B981] transition-colors">
+                  {cat.name}
+                </span>
+              </Link>
+            </motion.div>
+          ))}
         </motion.div>
       </section>
 
-      {/* ── PRIME BANNER ─────────────────────────────────────────────────── */}
-      <section className="bg-gradient-to-r from-[#131921] via-[#1a2535] to-[#131921] py-14">
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ══════════════════════════════════════════════════════════════
+          DEAL OF THE DAY
+      ══════════════════════════════════════════════════════════════ */}
+      <section id="deals" className="bg-[#0F2027] py-10">
+        <div className="max-w-[1500px] mx-auto px-4">
           <motion.div
             variants={fadeIn}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            className="flex flex-col md:flex-row items-center justify-between gap-8"
+            viewport={{ once: true }}
+            className="flex flex-col md:flex-row items-center gap-8 bg-[#1A3A4A] rounded-2xl p-6 md:p-10 shadow-xl"
           >
-            <div className="flex flex-col gap-4 max-w-xl">
-              <div className="flex items-center gap-2">
-                <span className="bg-[#00A8E1] text-white text-sm font-extrabold px-3 py-1 rounded tracking-widest uppercase">
-                  prime
+            {/* Image */}
+            <div className="flex-shrink-0 w-48 h-48 md:w-64 md:h-64 rounded-xl overflow-hidden bg-[#0F2027] flex items-center justify-center">
+              <img
+                src={DEAL_OF_DAY.image}
+                alt={DEAL_OF_DAY.title}
+                className="w-full h-full object-contain p-4"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src =
+                    "https://via.placeholder.com/300x300?text=Deal";
+                }}
+              />
+            </div>
+
+            {/* Info */}
+            <div className="flex-1 text-white">
+              <div className="flex items-center gap-2 mb-3">
+                <Zap className="w-5 h-5 text-[#10B981]" />
+                <span className="text-[#10B981] font-bold text-sm uppercase tracking-widest">
+                  Deal of the Day
                 </span>
-                <span className="text-white font-bold text-lg">Membership</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-white leading-tight text-balance">
-                Get More with ShopNow Prime
+              <h2 className="text-xl md:text-3xl font-extrabold mb-3 leading-tight">
+                {DEAL_OF_DAY.title}
               </h2>
-              <ul className="space-y-2">
-                {[
-                  "Free two-day delivery on millions of items",
-                  "Exclusive member-only deals and early access",
-                  "Unlimited streaming of movies and TV shows",
-                  "Free same-day delivery in select cities",
-                ].map((benefit) => (
-                  <li key={benefit} className="flex items-center gap-2 text-gray-300 text-sm">
-                    <CheckCircle className="w-4 h-4 text-[#00A8E1] flex-shrink-0" />
-                    {benefit}
-                  </li>
-                ))}
-              </ul>
-              <div className="flex flex-wrap gap-3 pt-2">
-                <Link
-                  href="/account"
-                  className="inline-flex items-center gap-2 bg-[#FF9900] hover:bg-[#e68900] text-[#131921] font-bold px-6 py-3 rounded-lg transition-all duration-200 hover:shadow-[0_4px_20px_rgba(255,153,0,0.4)] text-sm"
+              <StarRating rating={DEAL_OF_DAY.rating} count={DEAL_OF_DAY.reviewCount} />
+
+              <div className="flex items-baseline gap-3 mt-4 mb-2">
+                <span className="text-3xl font-extrabold text-[#10B981]">
+                  ${DEAL_OF_DAY.price.toFixed(2)}
+                </span>
+                <span className="text-lg text-gray-400 line-through">
+                  ${DEAL_OF_DAY.originalPrice.toFixed(2)}
+                </span>
+                <span className="bg-[#10B981] text-white text-sm font-bold px-2 py-0.5 rounded">
+                  -{DEAL_OF_DAY.discount}%
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="mb-4">
+                <div className="flex justify-between text-xs text-gray-400 mb-1">
+                  <span>{DEAL_OF_DAY.claimed}% claimed</span>
+                  <span>Limited stock</span>
+                </div>
+                <div className="w-full bg-[#0F2027] rounded-full h-2">
+                  <div
+                    className="bg-[#10B981] h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${DEAL_OF_DAY.claimed}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Countdown */}
+              <div className="flex items-center gap-3 mb-6">
+                <Clock className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-400">Ends in:</span>
+                <CountdownTimer endsAt={DEAL_OF_DAY.endsAt} />
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => handleAddToCart(DEAL_OF_DAY.id)}
+                  className="bg-[#10B981] hover:bg-[#059669] text-white font-bold px-6 py-3 rounded-xl transition-colors duration-200 flex items-center gap-2"
                 >
-                  Try Prime Free for 30 Days
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                  <ShoppingCart className="w-4 h-4" /> Add to Cart
+                </button>
                 <Link
-                  href="/account"
-                  className="inline-flex items-center gap-2 bg-transparent border border-white/20 hover:border-white/40 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 text-sm"
+                  href={`/product-detail?id=${DEAL_OF_DAY.id}`}
+                  className="bg-[#3B82F6] hover:bg-[#1D4ED8] text-white font-bold px-6 py-3 rounded-xl transition-colors duration-200"
                 >
-                  Learn More
+                  Buy Now
                 </Link>
               </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
-              {[
-                { icon: Truck, label: "Free Delivery", sub: "On millions of items" },
-                { icon: Zap, label: "Lightning Deals", sub: "Exclusive early access" },
-                { icon: Package, label: "Same-Day", sub: "In select cities" },
-                { icon: Award, label: "Prime Rewards", sub: "Earn on every purchase" },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-2 hover:bg-white/10 transition-colors duration-200"
-                >
-                  <item.icon className="w-5 h-5 text-[#00A8E1]" />
-                  <div>
-                    <p className="text-white text-xs font-bold">{item.label}</p>
-                    <p className="text-gray-400 text-[10px]">{item.sub}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ── VALUE PROPS ──────────────────────────────────────────────────── */}
-      <section className="bg-white py-12">
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+      {/* ══════════════════════════════════════════════════════════════
+          FEATURED PRODUCTS
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="max-w-[1500px] mx-auto px-4 py-12">
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="flex items-center justify-between mb-6"
+        >
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+            Featured Products
+            <span className="block w-12 h-1 bg-[#10B981] rounded-full mt-1" />
+          </h2>
+          <Link
+            href="/products"
+            className="text-sm text-[#10B981] hover:text-[#059669] font-semibold flex items-center gap-1"
           >
-            {VALUE_PROPS.map((vp) => (
-              <motion.div
-                key={vp.title}
-                variants={fadeInUp}
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className="flex flex-col items-center text-center gap-3 p-6 rounded-2xl border border-black/5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_-4px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)] transition-all duration-300"
-              >
-                <div className="w-12 h-12 rounded-full bg-[#FF9900]/10 flex items-center justify-center">
-                  <vp.icon className="w-6 h-6 text-[#FF9900]" />
-                </div>
-                <h3 className="font-bold text-gray-900 text-sm">{vp.title}</h3>
-                <p className="text-gray-500 text-xs leading-relaxed">{vp.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
+            View all <ChevronRight className="w-4 h-4" />
+          </Link>
+        </motion.div>
+
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+        >
+          {FEATURED_PRODUCTS.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={handleAddToCart}
+            />
+          ))}
+        </motion.div>
       </section>
 
-      {/* ── STATS ────────────────────────────────────────────────────────── */}
-      <section className="bg-[#EAEDED] py-12">
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {STATS.map((stat) => (
-              <motion.div
-                key={stat.label}
-                variants={scaleIn}
-                className="bg-white rounded-2xl p-6 text-center border border-black/5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_-4px_rgba(0,0,0,0.06)]"
-              >
-                <p className="text-3xl font-extrabold text-[#131921] tracking-tight">{stat.value}</p>
-                <p className="text-xs text-gray-500 mt-1 font-medium">{stat.label}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── TESTIMONIALS ─────────────────────────────────────────────────── */}
-      <section className="bg-white py-14">
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-          >
-            <motion.div variants={fadeInUp} className="text-center mb-10">
-              <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight text-balance">
-                Loved by Millions of Shoppers
-              </h2>
-              <p className="text-gray-500 mt-2 text-sm max-w-md mx-auto text-pretty">
-                Real reviews from real customers who shop with ShopNow every day.
-              </p>
-            </motion.div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {TESTIMONIALS.map((review) => (
-                <motion.div
-                  key={review.id}
-                  variants={fadeInUp}
-                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                  className="bg-[#FAFAFA] border border-black/5 rounded-2xl p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_-4px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 flex flex-col gap-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                      <img
-                        src={review.avatar}
-                        alt={review.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-sm font-bold text-gray-900">{review.name}</p>
-                        {review.verified && (
-                          <CheckCircle className="w-3.5 h-3.5 text-[#007185]" />
-                        )}
-                      </div>
-                      <p className="text-[10px] text-gray-400">{review.location}</p>
-                    </div>
-                    <div className="ml-auto flex">
-                      {Array.from({ length: review.rating }).map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-[#FF9900] text-[#FF9900]" />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-gray-600 text-sm leading-relaxed flex-1">
-                    {review.text}
-                  </p>
-                  <p className="text-[10px] text-gray-400 font-medium border-t border-black/5 pt-3">
-                    Verified purchase: {review.product}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
-      <section className="bg-[#131921] py-16">
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ══════════════════════════════════════════════════════════════
+          PROMO BANNER
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-gradient-to-r from-[#0F2027] to-[#1A3A4A] py-14">
+        <div className="max-w-[1500px] mx-auto px-4 text-center">
           <motion.div
             variants={fadeInUp}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            className="text-center flex flex-col items-center gap-6"
+            viewport={{ once: true }}
           >
-            <div className="w-14 h-14 rounded-full bg-[#FF9900]/15 border border-[#FF9900]/30 flex items-center justify-center">
-              <ShoppingCart className="w-7 h-7 text-[#FF9900]" />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight text-balance max-w-2xl">
-              Start Shopping Today. Everything You Need, Delivered Fast.
+            <Award className="w-10 h-10 text-[#10B981] mx-auto mb-4" />
+            <h2 className="text-2xl md:text-4xl font-extrabold text-white mb-3">
+              Become a Prime Member
             </h2>
-            <p className="text-gray-400 text-base max-w-lg text-pretty leading-relaxed">
-              Join over 200 million customers who trust ShopNow for the best prices, fastest delivery, and widest selection on the planet.
+            <p className="text-gray-300 text-base md:text-lg mb-8 max-w-xl mx-auto">
+              Enjoy free two-day shipping, exclusive deals, ad-free music, and
+              unlimited photo storage — all in one membership.
             </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Link
-                href="/products"
-                className="inline-flex items-center gap-2 bg-[#FF9900] hover:bg-[#e68900] text-[#131921] font-bold px-8 py-3.5 rounded-lg transition-all duration-200 hover:shadow-[0_4px_24px_rgba(255,153,0,0.45)] active:scale-95 text-sm"
-              >
-                Shop Now
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+            <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/account"
-                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/15 text-white font-semibold px-8 py-3.5 rounded-lg transition-all duration-200 text-sm backdrop-blur-sm"
+                className="bg-[#10B981] hover:bg-[#059669] text-white font-bold px-8 py-3 rounded-xl transition-colors duration-200 shadow-lg"
               >
-                Create Free Account
+                Try Prime Free
+              </Link>
+              <Link
+                href="/products"
+                className="bg-white/10 hover:bg-white/20 text-white font-semibold px-8 py-3 rounded-xl border border-white/30 transition-colors duration-200"
+              >
+                Continue Shopping
               </Link>
             </div>
           </motion.div>
         </div>
       </section>
 
-    </main>
+      {/* ══════════════════════════════════════════════════════════════
+          RECENTLY VIEWED / RECOMMENDATIONS
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="max-w-[1500px] mx-auto px-4 py-12">
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="flex items-center justify-between mb-6"
+        >
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+            Recommended for You
+            <span className="block w-12 h-1 bg-[#3B82F6] rounded-full mt-1" />
+          </h2>
+          <Link
+            href="/products"
+            className="text-sm text-[#10B981] hover:text-[#059669] font-semibold flex items-center gap-1"
+          >
+            See more <ChevronRight className="w-4 h-4" />
+          </Link>
+        </motion.div>
+
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+        >
+          {FEATURED_PRODUCTS.slice(4).map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={handleAddToCart}
+            />
+          ))}
+        </motion.div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          NEWSLETTER
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="bg-white border-t border-gray-100 py-12">
+        <div className="max-w-[600px] mx-auto px-4 text-center">
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <Package className="w-10 h-10 text-[#10B981] mx-auto mb-3" />
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+              Get Exclusive Deals in Your Inbox
+            </h2>
+            <p className="text-gray-500 text-sm mb-6">
+              Subscribe to our newsletter and be the first to know about flash
+              sales, new arrivals, and special offers.
+            </p>
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="flex gap-2 max-w-md mx-auto"
+            >
+              <input
+                type="email"
+                placeholder="Enter your email address"
+                className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
+              />
+              <button
+                type="submit"
+                className="bg-[#10B981] hover:bg-[#059669] text-white font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 text-sm"
+              >
+                Subscribe
+              </button>
+            </form>
+            <p className="text-xs text-gray-400 mt-3">
+              No spam, unsubscribe at any time.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+    </div>
   );
 }

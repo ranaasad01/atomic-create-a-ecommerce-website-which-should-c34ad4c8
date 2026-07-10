@@ -1,8 +1,8 @@
 export const APP_NAME = "ShopNow";
 export const APP_TAGLINE = "Everything You Need, Delivered Fast";
-export const APP_ACCENT = "#FF9900";
-export const APP_DARK = "#131921";
-export const APP_NAV = "#232F3E";
+export const APP_ACCENT = "#10B981";
+export const APP_DARK = "#0F2027";
+export const APP_NAV = "#1A3A4A";
 
 export interface NavLink {
   label: string;

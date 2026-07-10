@@ -1,295 +1,248 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence, type Variants } from "framer-motion";
-import { Star, ShoppingCart, Zap, ChevronDown, ChevronUp, Check, Shield, RotateCcw, Truck, Heart, Share2, ThumbsUp, ThumbsDown, ChevronRight } from 'lucide-react';
-import { useTranslations } from "next-intl";
+import { motion } from "framer-motion";
+import { ShoppingCart, Heart, Star, ChevronRight, Check, Truck, RotateCcw, Shield, Plus, Minus, Share2, ThumbsUp, ThumbsDown, AlertCircle } from 'lucide-react';
 import { fadeInUp, fadeIn, staggerContainer, scaleIn, slideInLeft, slideInRight } from "@/lib/motion";
-import { APP_NAME, APP_ACCENT } from "@/lib/data";
+import { useTranslations } from "next-intl";
 
-// ─── Mock product data ────────────────────────────────────────────────────────
+// ─── Mock Data ────────────────────────────────────────────────────────────────
 
-interface MockProduct {
-  id: number;
-  title: string;
-  brand: string;
-  price: number;
-  originalPrice: number;
-  discount: number;
-  rating: number;
-  reviewCount: number;
-  category: string;
-  description: string;
-  features: string[];
-  images: string[];
-  inStock: boolean;
-  stockCount: number;
-  prime: boolean;
-  deliveryDate: string;
-  returnDays: number;
-  specs: { label: string; value: string }[];
-}
+const PRODUCT = {
+  id: 42,
+  title: "Sony WH-1000XM5 Wireless Industry Leading Noise Canceling Headphones",
+  brand: "Sony",
+  asin: "B09XS7JWHH",
+  price: 279.99,
+  originalPrice: 399.99,
+  discount: 30,
+  rating: 4.7,
+  reviewCount: 18432,
+  inStock: true,
+  stockCount: 12,
+  prime: true,
+  category: "Electronics",
+  subcategory: "Headphones",
+  images: [
+    "https://m.media-amazon.com/images/I/511c23mDjoL._AC_UF894,1000_QL80_.jpg",
+    "https://m.media-amazon.com/images/I/61sRKTAfrhL._AC_UF350,350_QL80_.jpg",
+    "https://m.media-amazon.com/images/I/71Z401LjFFL._AC_UF894,1000_QL80_.jpg",
+    "https://m.media-amazon.com/images/I/71IcVl9xbYL._AC_UF1000,1000_QL80_.jpg",
+    "https://m.media-amazon.com/images/I/71+8uTMDRFL.jpg",
+  ],
+  colors: ["Midnight Black", "Platinum Silver"],
+  description:
+    "Industry-leading noise canceling with two processors and eight microphones. Crystal clear hands-free calling with four beamforming microphones, precise voice pickup, and advanced audio signal processing. Up to 30-hour battery life with quick charging (3 min charge for 3 hours of playback). Lightweight, soft fit comfort with a newly designed headband and ear pads.",
+  highlights: [
+    "Industry-leading noise cancellation powered by two processors",
+    "Crystal clear hands-free calling with 4 beamforming microphones",
+    "Up to 30-hour battery life with quick charge (3 min = 3 hrs)",
+    "Multipoint connection — connect to two Bluetooth devices simultaneously",
+    "Speak-to-chat automatically pauses music when you start a conversation",
+    "Adaptive Sound Control adjusts ambient sound settings automatically",
+    "Lightweight design at just 250g for all-day comfort",
+    "Works with Alexa, Google Assistant, and Siri",
+  ],
+  specs: [
+    { label: "Brand", value: "Sony" },
+    { label: "Model", value: "WH-1000XM5" },
+    { label: "Color", value: "Midnight Black" },
+    { label: "Connectivity", value: "Bluetooth 5.2" },
+    { label: "Battery Life", value: "30 hours" },
+    { label: "Weight", value: "250 grams" },
+    { label: "Driver Size", value: "30mm" },
+    { label: "Frequency Response", value: "4 Hz – 40,000 Hz" },
+    { label: "Noise Cancellation", value: "Active (ANC)" },
+    { label: "Microphones", value: "8 microphones" },
+    { label: "Foldable", value: "No" },
+    { label: "Warranty", value: "1 Year Manufacturer" },
+  ],
+  deliveryDate: "Tuesday, July 15",
+  freeDeliveryMin: 25,
+};
 
-const MOCK_PRODUCTS: MockProduct[] = [
+const REVIEWS = [
   {
     id: 1,
-    title: "Sony WH-1000XM5 Wireless Industry Leading Noise Canceling Headphones",
-    brand: "Sony",
-    price: 279.99,
-    originalPrice: 399.99,
-    discount: 30,
-    rating: 4.7,
-    reviewCount: 12483,
-    category: "Electronics",
-    description:
-      "Experience industry-leading noise cancellation with the Sony WH-1000XM5. Featuring two processors and eight microphones, these headphones deliver exceptional sound quality and up to 30 hours of battery life. The redesigned headband and soft fit leather ear pads provide all-day comfort, while Speak-to-Chat technology automatically pauses playback when you start a conversation.",
-    features: [
-      "Industry-leading noise cancellation with two processors and eight microphones",
-      "Up to 30-hour battery life with quick charging (3 min charge = 3 hours playback)",
-      "Crystal clear hands-free calling with four beamforming microphones",
-      "Multipoint connection — connect to two Bluetooth devices simultaneously",
-      "Adaptive Sound Control adjusts ambient sound settings automatically",
-      "Wear detection pauses music when headphones are removed",
-      "Touch sensor controls for easy music and call management",
-      "Foldable design with premium carrying case included",
-    ],
-    images: [
-      "/images/sony-wh1000xm5-headphones-black.jpg",
-      "/images/sony-headphones-side-view.jpg",
-      "/images/sony-headphones-folded.jpg",
-      "/images/sony-headphones-wearing.jpg",
-    ],
-    inStock: true,
-    stockCount: 14,
-    prime: true,
-    deliveryDate: "Tomorrow, Dec 15",
-    returnDays: 30,
-    specs: [
-      { label: "Brand", value: "Sony" },
-      { label: "Model", value: "WH-1000XM5" },
-      { label: "Color", value: "Midnight Black" },
-      { label: "Connectivity", value: "Bluetooth 5.2" },
-      { label: "Battery Life", value: "30 hours" },
-      { label: "Weight", value: "250 g" },
-      { label: "Driver Size", value: "30 mm" },
-      { label: "Frequency Response", value: "4 Hz – 40,000 Hz" },
-    ],
-  },
-  {
-    id: 2,
-    title: "Apple MacBook Air 15-inch M3 Chip, 8GB RAM, 256GB SSD",
-    brand: "Apple",
-    price: 1099.0,
-    originalPrice: 1299.0,
-    discount: 15,
-    rating: 4.8,
-    reviewCount: 5621,
-    category: "Electronics",
-    description:
-      "The MacBook Air 15-inch with M3 chip delivers exceptional performance in an incredibly thin and light design. With up to 18 hours of battery life, a stunning Liquid Retina display, and the power of Apple silicon, this laptop handles everything from everyday tasks to demanding creative workflows with ease.",
-    features: [
-      "Apple M3 chip with 8-core CPU and 10-core GPU",
-      "15.3-inch Liquid Retina display with 500 nits brightness",
-      "Up to 18 hours of battery life",
-      "8GB unified memory, 256GB SSD storage",
-      "1080p FaceTime HD camera with advanced image signal processor",
-      "MagSafe 3 charging, two Thunderbolt / USB 4 ports",
-      "Wi-Fi 6E and Bluetooth 5.3",
-      "Fanless design — completely silent operation",
-    ],
-    images: [
-      "/images/apple-macbook-air-m3-silver.jpg",
-      "/images/macbook-air-open-display.jpg",
-      "/images/macbook-air-keyboard-closeup.jpg",
-      "/images/macbook-air-ports-side.jpg",
-    ],
-    inStock: true,
-    stockCount: 7,
-    prime: true,
-    deliveryDate: "Dec 16 – Dec 17",
-    returnDays: 15,
-    specs: [
-      { label: "Brand", value: "Apple" },
-      { label: "Processor", value: "Apple M3" },
-      { label: "RAM", value: "8 GB" },
-      { label: "Storage", value: "256 GB SSD" },
-      { label: "Display", value: '15.3" Liquid Retina' },
-      { label: "OS", value: "macOS Sonoma" },
-      { label: "Weight", value: "1.51 kg" },
-      { label: "Battery", value: "Up to 18 hours" },
-    ],
-  },
-];
-
-const DEFAULT_PRODUCT = MOCK_PRODUCTS[0];
-
-// ─── Mock reviews ─────────────────────────────────────────────────────────────
-
-interface Review {
-  id: number;
-  author: string;
-  avatar: string;
-  rating: number;
-  title: string;
-  body: string;
-  date: string;
-  verified: boolean;
-  helpful: number;
-  notHelpful: number;
-}
-
-const MOCK_REVIEWS: Review[] = [
-  {
-    id: 1,
-    author: "TechEnthusiast_Mike",
-    avatar: "/images/reviewer-avatar-mike.jpg",
+    author: "Marcus T.",
+    avatar: "M",
     rating: 5,
-    title: "Best noise-canceling headphones I have ever owned",
-    body: "I have tried many headphones over the years and these are by far the best. The noise cancellation is incredible — I can barely hear anything on a busy subway. Sound quality is rich and detailed, and the battery life is outstanding. Highly recommend for anyone who travels frequently or works in a noisy environment.",
-    date: "December 8, 2024",
+    title: "Best noise canceling headphones I've ever owned",
+    date: "July 2, 2025",
     verified: true,
     helpful: 342,
-    notHelpful: 12,
+    body: "I've tried Bose, Apple, and several others. These Sony XM5s blow them all out of the water. The noise cancellation is absolutely incredible — I can wear these on a busy subway and hear nothing but my music. Sound quality is warm and detailed. Battery lasts me nearly a week of daily commuting.",
+    images: [],
   },
   {
     id: 2,
-    author: "AudioPhile_Sarah",
-    avatar: "/images/reviewer-avatar-sarah.jpg",
+    author: "Priya S.",
+    avatar: "P",
     rating: 4,
-    title: "Excellent sound, slightly tight fit at first",
-    body: "The sound quality is phenomenal and the noise cancellation works as advertised. My only minor complaint is that the headband felt a bit tight during the first few days of use. After breaking them in, they are now very comfortable. The touch controls are intuitive and the companion app offers great customization options.",
-    date: "November 29, 2024",
+    title: "Excellent sound, minor comfort issue after long sessions",
+    date: "June 28, 2025",
     verified: true,
-    helpful: 218,
-    notHelpful: 8,
+    helpful: 198,
+    body: "Sound quality and noise cancellation are top tier. My only gripe is that after about 3 hours of continuous wear, the ear cups start to feel a bit warm. Not a dealbreaker at all — just something to note if you plan marathon listening sessions. Call quality is outstanding for video meetings.",
+    images: [],
   },
   {
     id: 3,
-    author: "WorkFromHome_James",
-    avatar: "/images/reviewer-avatar-james.jpg",
+    author: "Derek W.",
+    avatar: "D",
     rating: 5,
-    title: "Game changer for remote work",
-    body: "Working from home with two kids is challenging. These headphones have been a complete game changer. The noise cancellation blocks out everything and the call quality is crystal clear. My colleagues say I sound better than ever on video calls. Worth every penny.",
-    date: "November 15, 2024",
-    verified: true,
-    helpful: 189,
-    notHelpful: 4,
-  },
-  {
-    id: 4,
-    author: "MusicLover_Priya",
-    avatar: "/images/reviewer-avatar-priya.jpg",
-    rating: 4,
-    title: "Great headphones with minor software quirks",
-    body: "Sound quality is top-notch across all genres. The Sony Headphones Connect app is useful but occasionally crashes on my Android phone. The Speak-to-Chat feature is clever but sometimes activates unintentionally. Despite these small issues, the overall experience is excellent and I use them every single day.",
-    date: "October 31, 2024",
-    verified: false,
-    helpful: 97,
-    notHelpful: 15,
-  },
-  {
-    id: 5,
-    author: "FrequentFlyer_David",
-    avatar: "/images/reviewer-avatar-david.jpg",
-    rating: 5,
-    title: "Perfect travel companion",
-    body: "I fly internationally several times a month and these headphones have transformed my travel experience. The noise cancellation on planes is exceptional. Battery easily lasts a full long-haul flight. The foldable design fits neatly in the included case. Multipoint connection means I can switch between my phone and laptop seamlessly.",
-    date: "October 22, 2024",
+    title: "Worth every penny — absolute game changer for travel",
+    date: "June 20, 2025",
     verified: true,
     helpful: 276,
-    notHelpful: 6,
+    body: "Just got back from a 14-hour flight and these headphones made it feel like a 2-hour trip. The noise cancellation blocked out engine noise completely. Paired instantly with my phone and laptop. The touch controls are intuitive. Highly recommend for frequent travelers.",
+    images: [],
   },
 ];
 
-// ─── Rating distribution ──────────────────────────────────────────────────────
-
-const RATING_DIST = [
-  { stars: 5, pct: 68 },
-  { stars: 4, pct: 18 },
-  { stars: 3, pct: 8 },
-  { stars: 2, pct: 3 },
-  { stars: 1, pct: 3 },
+const RELATED_PRODUCTS = [
+  {
+    id: 10,
+    title: "Bose QuietComfort 45 Headphones",
+    price: 229.99,
+    originalPrice: 329.99,
+    rating: 4.6,
+    reviewCount: 9823,
+    image: "https://m.media-amazon.com/images/I/511c23mDjoL._AC_UF894,1000_QL80_.jpg",
+    prime: true,
+  },
+  {
+    id: 11,
+    title: "Apple AirPods Pro (2nd Generation)",
+    price: 189.99,
+    originalPrice: 249.0,
+    rating: 4.9,
+    reviewCount: 34521,
+    image: "https://m.media-amazon.com/images/I/61sRKTAfrhL._AC_UF350,350_QL80_.jpg",
+    prime: true,
+  },
+  {
+    id: 12,
+    title: "Jabra Evolve2 85 Wireless Headset",
+    price: 379.99,
+    originalPrice: 449.99,
+    rating: 4.5,
+    reviewCount: 4231,
+    image: "https://m.media-amazon.com/images/I/71Z401LjFFL._AC_UF894,1000_QL80_.jpg",
+    prime: false,
+  },
+  {
+    id: 13,
+    title: "Sennheiser Momentum 4 Wireless",
+    price: 249.95,
+    originalPrice: 349.95,
+    rating: 4.7,
+    reviewCount: 6102,
+    image: "https://m.media-amazon.com/images/I/71IcVl9xbYL._AC_UF1000,1000_QL80_.jpg",
+    prime: true,
+  },
 ];
 
-// ─── Helper components ────────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
-function StarRating({ rating, size = 16 }: { rating: number; size?: number }) {
+function StarRating({ rating, size = "md" }: { rating: number; size?: "sm" | "md" | "lg" }) {
+  const full = Math.floor(rating);
+  const half = rating - full >= 0.5;
+  const sizeClass = size === "sm" ? "w-3.5 h-3.5" : size === "lg" ? "w-6 h-6" : "w-4 h-4";
+
   return (
-    <span className="inline-flex items-center gap-0.5" aria-label={`${rating} out of 5 stars`}>
-      {[1, 2, 3, 4, 5].map((star) => {
-        const filled = rating >= star;
-        const half = !filled && rating >= star - 0.5;
-        return (
-          <span key={star} className="relative inline-block" style={{ width: size, height: size }}>
-            <Star
-              size={size}
-              className="text-gray-300"
-              fill="currentColor"
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <svg key={i} className={sizeClass} viewBox="0 0 20 20" fill="none">
+          {i < full ? (
+            <polygon
+              points="10,1 12.9,7 19.5,7.6 14.5,12 16.2,18.5 10,15 3.8,18.5 5.5,12 0.5,7.6 7.1,7"
+              fill="#10B981"
             />
-            {(filled || half) && (
-              <span
-                className="absolute inset-0 overflow-hidden"
-                style={{ width: half ? "50%" : "100%" }}
-              >
-                <Star size={size} className="text-[#FF9900]" fill="currentColor" />
-              </span>
-            )}
-          </span>
-        );
-      })}
-    </span>
+          ) : i === full && half ? (
+            <>
+              <defs>
+                <linearGradient id={`half-star-${i}`}>
+                  <stop offset="50%" stopColor="#10B981" />
+                  <stop offset="50%" stopColor="#D1D5DB" />
+                </linearGradient>
+              </defs>
+              <polygon
+                points="10,1 12.9,7 19.5,7.6 14.5,12 16.2,18.5 10,15 3.8,18.5 5.5,12 0.5,7.6 7.1,7"
+                fill={`url(#half-star-${i})`}
+              />
+            </>
+          ) : (
+            <polygon
+              points="10,1 12.9,7 19.5,7.6 14.5,12 16.2,18.5 10,15 3.8,18.5 5.5,12 0.5,7.6 7.1,7"
+              fill="#D1D5DB"
+            />
+          )}
+        </svg>
+      ))}
+    </div>
   );
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+function RatingBar({ label, pct }: { label: string; pct: number }) {
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <span className="w-12 text-right text-[#10B981] hover:underline cursor-pointer shrink-0">
+        {label}
+      </span>
+      <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-[#10B981] rounded-full"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="w-8 text-xs text-gray-500">{pct}%</span>
+    </div>
+  );
+}
 
-function ProductPageInner() {
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function ProductPage() {
   const t = useTranslations();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const idParam = searchParams.get("id");
-  const product =
-    MOCK_PRODUCTS.find((p) => p.id === Number(idParam)) ?? DEFAULT_PRODUCT;
-
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedColor, setSelectedColor] = useState(PRODUCT.colors[0]);
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<"description" | "specs" | "reviews">("description");
   const [wishlisted, setWishlisted] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
-  const [helpfulVotes, setHelpfulVotes] = useState<Record<number, "up" | "down" | null>>({});
+  const [activeTab, setActiveTab] = useState<"description" | "specs" | "reviews">("description");
 
-  // Reset state when product changes
-  useEffect(() => {
-    setSelectedImage(0);
-    setQuantity(1);
-    setAddedToCart(false);
-    setWishlisted(false);
-  }, [product.id]);
+  const discount = Math.round(
+    ((PRODUCT.originalPrice - PRODUCT.price) / PRODUCT.originalPrice) * 100
+  );
 
   const handleAddToCart = () => {
     try {
       const stored = localStorage.getItem("shopnow-cart");
-      const cart: Array<{ id: number; quantity: number; title: string; price: number; image: string; category: string; description: string; rating: { rate: number; count: number } }> =
-        stored ? JSON.parse(stored) : [];
-      const existing = cart.find((item) => item.id === product.id);
+      const cart = stored ? (JSON.parse(stored) as Array<{ id: number; quantity: number; [key: string]: unknown }>) : [];
+      const existing = cart.find((item) => item.id === PRODUCT.id);
+      let updated;
       if (existing) {
-        existing.quantity += quantity;
+        updated = cart.map((item) =>
+          item.id === PRODUCT.id ? { ...item, quantity: item.quantity + quantity } : item
+        );
       } else {
-        cart.push({
-          id: product.id,
-          quantity,
-          title: product.title,
-          price: product.price,
-          image: product.images[0] ?? "",
-          category: product.category,
-          description: product.description,
-          rating: { rate: product.rating, count: product.reviewCount },
-        });
+        updated = [
+          ...cart,
+          {
+            id: PRODUCT.id,
+            title: PRODUCT.title,
+            price: PRODUCT.price,
+            image: PRODUCT.images[0],
+            category: PRODUCT.category,
+            description: PRODUCT.description,
+            rating: { rate: PRODUCT.rating, count: PRODUCT.reviewCount },
+            quantity,
+          },
+        ];
       }
-      localStorage.setItem("shopnow-cart", JSON.stringify(cart));
+      localStorage.setItem("shopnow-cart", JSON.stringify(updated));
       window.dispatchEvent(new Event("cart-updated"));
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 2500);
@@ -298,760 +251,529 @@ function ProductPageInner() {
     }
   };
 
-  const handleBuyNow = () => {
-    handleAddToCart();
-    router.push("/cart");
-  };
-
-  const handleHelpful = (reviewId: number, vote: "up" | "down") => {
-    setHelpfulVotes((prev) => ({
-      ...prev,
-      [reviewId]: prev[reviewId] === vote ? null : vote,
-    }));
-  };
-
-  const quantityOptions = Array.from({ length: Math.min(product.stockCount, 10) }, (_, i) => i + 1);
+  const ratingBars = [
+    { label: "5 star", pct: 72 },
+    { label: "4 star", pct: 16 },
+    { label: "3 star", pct: 7 },
+    { label: "2 star", pct: 3 },
+    { label: "1 star", pct: 2 },
+  ];
 
   return (
-    <main className="min-h-screen bg-[#EAEDED]">
+    <div className="min-h-screen bg-white">
       {/* Breadcrumb */}
-      <motion.nav
-        variants={fadeIn}
-        initial="hidden"
-        animate="visible"
-        className="bg-white border-b border-gray-200"
-        aria-label="Breadcrumb"
-      >
-        <div className="max-w-[1500px] mx-auto px-4 py-2 flex items-center gap-1 text-xs text-gray-600 flex-wrap">
-          <Link href="/" className="hover:text-[#FF9900] hover:underline transition-colors">
-            Home
-          </Link>
-          <ChevronRight size={12} className="text-gray-400 flex-shrink-0" />
-          <Link href="/products" className="hover:text-[#FF9900] hover:underline transition-colors">
-            {product.category}
-          </Link>
-          <ChevronRight size={12} className="text-gray-400 flex-shrink-0" />
-          <span className="text-gray-800 truncate max-w-[200px] sm:max-w-xs">{product.title}</span>
-        </div>
-      </motion.nav>
-
-      <div className="max-w-[1500px] mx-auto px-3 sm:px-4 py-6">
-        {/* ── Top section: image + info + buy box ── */}
-        <div className="bg-white rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_-4px_rgba(0,0,0,0.08)] p-4 sm:p-6 lg:p-8 mb-6">
-          <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-8 lg:gap-10">
-
-            {/* ── Image gallery ── */}
-            <motion.div
-              variants={slideInLeft}
-              initial="hidden"
-              animate="visible"
-              className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:w-[420px]"
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-[1500px] mx-auto px-4 py-2">
+          <nav className="flex items-center gap-1 text-xs text-gray-500" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-[#10B981] hover:underline">
+              Home
+            </Link>
+            <ChevronRight className="w-3 h-3" />
+            <Link href="/products" className="hover:text-[#10B981] hover:underline">
+              {PRODUCT.category}
+            </Link>
+            <ChevronRight className="w-3 h-3" />
+            <Link
+              href={`/products?category=${PRODUCT.subcategory.toLowerCase()}`}
+              className="hover:text-[#10B981] hover:underline"
             >
-              {/* Thumbnail strip */}
-              <div className="flex sm:flex-col lg:flex-col gap-2 order-2 sm:order-1">
-                {product.images.map((img, idx) => (
-                  <motion.button
-                    key={idx}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setSelectedImage(idx)}
-                    className={`w-14 h-14 sm:w-16 sm:h-16 rounded-lg border-2 overflow-hidden flex-shrink-0 transition-all duration-200 ${
-                      selectedImage === idx
-                        ? "border-[#FF9900] shadow-[0_0_0_1px_#FF9900]"
-                        : "border-gray-200 hover:border-gray-400"
+              {PRODUCT.subcategory}
+            </Link>
+            <ChevronRight className="w-3 h-3" />
+            <span className="text-gray-700 truncate max-w-[200px]">{PRODUCT.title}</span>
+          </nav>
+        </div>
+      </div>
+
+      <div className="max-w-[1500px] mx-auto px-4 py-6">
+        {/* ── Top section: images + info + buy box ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr_320px] gap-6 lg:gap-8">
+          {/* Image gallery */}
+          <motion.div
+            variants={slideInLeft}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col sm:flex-row lg:flex-col gap-3"
+          >
+            {/* Thumbnails */}
+            <div className="flex sm:flex-col lg:flex-col gap-2 order-2 sm:order-1">
+              {PRODUCT.images.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedImage(idx)}
+                  className={`w-14 h-14 border-2 rounded overflow-hidden flex-shrink-0 transition-all duration-150 ${
+                    selectedImage === idx
+                      ? "border-[#10B981] shadow-md"
+                      : "border-gray-200 hover:border-[#3B82F6]"
+                  }`}
+                  aria-label={`View image ${idx + 1}`}
+                >
+                  <img
+                    src={img}
+                    alt={`${PRODUCT.title} view ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        "https://via.placeholder.com/56x56?text=img";
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* Main image */}
+            <div className="order-1 sm:order-2 relative">
+              <div className="w-full sm:w-[380px] lg:w-[380px] aspect-square border border-gray-200 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                <img
+                  src={PRODUCT.images[selectedImage]}
+                  alt={PRODUCT.title}
+                  className="w-full h-full object-contain p-4"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      "https://via.placeholder.com/380x380?text=Product+Image";
+                  }}
+                />
+              </div>
+              {/* Wishlist button */}
+              <button
+                onClick={() => setWishlisted((w) => !w)}
+                className="absolute top-3 right-3 w-9 h-9 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-50 transition-colors"
+                aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              >
+                <Heart
+                  className={`w-5 h-5 ${
+                    wishlisted ? "fill-red-500 text-red-500" : "text-gray-400"
+                  }`}
+                />
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Product info */}
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col gap-4"
+          >
+            {/* Brand */}
+            <p className="text-sm text-[#10B981] font-medium hover:underline cursor-pointer">
+              Visit the {PRODUCT.brand} Store
+            </p>
+
+            {/* Title */}
+            <h1 className="text-xl sm:text-2xl font-medium text-gray-900 leading-snug">
+              {PRODUCT.title}
+            </h1>
+
+            {/* Rating row */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#10B981] font-semibold text-sm">{PRODUCT.rating}</span>
+                <StarRating rating={PRODUCT.rating} />
+              </div>
+              <span className="text-sm text-[#10B981] hover:text-[#059669] hover:underline cursor-pointer">
+                {PRODUCT.reviewCount.toLocaleString("en-US")} ratings
+              </span>
+              <span className="text-gray-300">|</span>
+              <span className="text-sm text-[#10B981] hover:text-[#059669] hover:underline cursor-pointer">
+                1,200+ answered questions
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200" />
+
+            {/* Price */}
+            <div className="flex flex-wrap items-baseline gap-3">
+              <span className="text-3xl font-bold text-gray-900">
+                ${PRODUCT.price.toFixed(2)}
+              </span>
+              <span className="text-sm text-gray-500 line-through">
+                ${PRODUCT.originalPrice.toFixed(2)}
+              </span>
+              <span className="text-sm font-semibold text-[#10B981]">
+                Save {discount}%
+              </span>
+            </div>
+
+            {/* Prime badge */}
+            {PRODUCT.prime && (
+              <div className="flex items-center gap-2">
+                <span className="bg-[#3B82F6] text-white text-xs font-bold px-2 py-0.5 rounded">
+                  prime
+                </span>
+                <span className="text-sm text-gray-600">
+                  FREE delivery{" "}
+                  <span className="font-semibold text-gray-900">{PRODUCT.deliveryDate}</span>
+                </span>
+              </div>
+            )}
+
+            {/* Color selector */}
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">
+                Color:{" "}
+                <span className="font-semibold text-gray-900">{selectedColor}</span>
+              </p>
+              <div className="flex gap-2">
+                {PRODUCT.colors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`px-3 py-1.5 text-sm border-2 rounded transition-all duration-150 ${
+                      selectedColor === color
+                        ? "border-[#10B981] bg-[#10B981]/10 text-[#10B981] font-medium"
+                        : "border-gray-300 text-gray-700 hover:border-[#3B82F6]"
                     }`}
-                    aria-label={`View image ${idx + 1}`}
                   >
-                    <img
-                      src={img}
-                      alt={`${product.title} view ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </motion.button>
+                    {color}
+                  </button>
                 ))}
               </div>
+            </div>
 
-              {/* Main image */}
-              <div className="order-1 sm:order-2 flex-1 lg:flex-none">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={selectedImage}
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.97 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="relative aspect-square w-full lg:w-[360px] rounded-xl overflow-hidden bg-gray-50 border border-gray-100"
-                  >
-                    <img
-                      src={product.images[selectedImage] ?? product.images[0]}
-                      alt={product.title}
-                      className="w-full h-full object-contain p-4"
-                    />
-                    {product.discount > 0 && (
-                      <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        -{product.discount}%
-                      </span>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </motion.div>
+            {/* Highlights */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">About this item</h3>
+              <ul className="space-y-1.5">
+                {PRODUCT.highlights.map((h, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <Check className="w-4 h-4 text-[#10B981] mt-0.5 shrink-0" />
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            {/* ── Product info ── */}
-            <motion.div
-              variants={fadeInUp}
-              initial="hidden"
-              animate="visible"
-              className="flex flex-col gap-4 min-w-0"
-            >
-              {/* Brand */}
-              <Link
-                href={`/products?q=${encodeURIComponent(product.brand)}`}
-                className="text-[#0066C0] text-sm hover:text-[#FF9900] hover:underline transition-colors w-fit"
-              >
-                Visit the {product.brand} Store
-              </Link>
+            {/* Share */}
+            <button className="flex items-center gap-1.5 text-sm text-[#10B981] hover:text-[#059669] hover:underline w-fit">
+              <Share2 className="w-4 h-4" />
+              Share
+            </button>
+          </motion.div>
 
-              {/* Title */}
-              <h1 className="text-xl sm:text-2xl font-medium text-gray-900 leading-snug text-pretty">
-                {product.title}
-              </h1>
-
-              {/* Rating row */}
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-1.5">
-                  <StarRating rating={product.rating} size={18} />
-                  <span className="text-[#0066C0] text-sm hover:text-[#FF9900] hover:underline cursor-pointer transition-colors font-medium">
-                    {product.rating.toFixed(1)}
-                  </span>
-                </div>
-                <span className="text-gray-300">|</span>
-                <button
-                  onClick={() => setActiveTab("reviews")}
-                  className="text-[#0066C0] text-sm hover:text-[#FF9900] hover:underline transition-colors"
-                >
-                  {product.reviewCount.toLocaleString("en-US")} ratings
-                </button>
-                <span className="text-gray-300">|</span>
-                <span className="text-[#0066C0] text-sm cursor-pointer hover:underline">
-                  1,200+ bought in past month
-                </span>
-              </div>
-
-              <div className="border-t border-gray-100" />
-
+          {/* Buy box */}
+          <motion.div
+            variants={slideInRight}
+            initial="hidden"
+            animate="visible"
+            className="lg:sticky lg:top-20 self-start"
+          >
+            <div className="border border-gray-200 rounded-lg p-5 flex flex-col gap-4 bg-white shadow-sm">
               {/* Price */}
-              <div className="flex items-baseline gap-3 flex-wrap">
-                <span className="text-red-600 text-sm font-medium">
-                  -{product.discount}%
+              <div>
+                <span className="text-2xl font-bold text-gray-900">
+                  ${PRODUCT.price.toFixed(2)}
                 </span>
-                <span className="text-3xl font-medium text-gray-900">
-                  <sup className="text-base align-super">$</sup>
-                  {Math.floor(product.price)}
-                  <sup className="text-base align-super">
-                    {((product.price % 1) * 100).toFixed(0).padStart(2, "0")}
-                  </sup>
-                </span>
-                <div className="flex flex-col">
-                  <span className="text-xs text-gray-500">List price:</span>
-                  <span className="text-sm text-gray-500 line-through">
-                    ${product.originalPrice.toFixed(2)}
-                  </span>
-                </div>
+                {PRODUCT.prime && (
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="bg-[#3B82F6] text-white text-xs font-bold px-1.5 py-0.5 rounded">
+                      prime
+                    </span>
+                    <span className="text-xs text-gray-600">
+                      FREE delivery <strong>{PRODUCT.deliveryDate}</strong>
+                    </span>
+                  </div>
+                )}
               </div>
-
-              {/* Prime badge */}
-              {product.prime && (
-                <div className="flex items-center gap-2">
-                  <span className="bg-[#00A8E0] text-white text-xs font-bold px-2 py-0.5 rounded tracking-wide">
-                    prime
-                  </span>
-                  <span className="text-sm text-gray-600">
-                    FREE delivery{" "}
-                    <span className="font-semibold text-gray-900">{product.deliveryDate}</span>
-                  </span>
-                </div>
-              )}
 
               {/* Delivery info */}
-              <div className="flex items-start gap-2 text-sm text-gray-700">
-                <Truck size={16} className="text-gray-500 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-gray-700 flex items-start gap-2">
+                <Truck className="w-4 h-4 text-[#10B981] mt-0.5 shrink-0" />
                 <span>
-                  Order within{" "}
-                  <span className="text-green-700 font-semibold">5 hrs 23 mins</span> to get it by{" "}
-                  <span className="font-semibold">{product.deliveryDate}</span>
+                  Deliver to <span className="font-semibold">New York 10001</span>
                 </span>
               </div>
 
               {/* Stock */}
-              {product.inStock ? (
-                <p className="text-green-700 font-medium text-base">In Stock</p>
-              ) : (
-                <p className="text-red-600 font-medium text-base">Out of Stock</p>
-              )}
-              {product.inStock && product.stockCount <= 10 && (
-                <p className="text-red-600 text-sm -mt-2">
-                  Only {product.stockCount} left in stock — order soon.
+              {PRODUCT.inStock ? (
+                <p className="text-[#10B981] font-semibold text-sm">
+                  In Stock — only {PRODUCT.stockCount} left
                 </p>
+              ) : (
+                <p className="text-red-600 font-semibold text-sm">Currently unavailable</p>
               )}
 
-              {/* Features list */}
-              <ul className="space-y-1.5 mt-1">
-                {product.features.slice(0, 4).map((feat, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <Check size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
-                    <span>{feat}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Action buttons (mobile/tablet) */}
-              <div className="flex flex-col gap-2 mt-2 lg:hidden">
-                {/* Quantity */}
-                <div className="flex items-center gap-3">
-                  <label htmlFor="qty-mobile" className="text-sm font-medium text-gray-700">
-                    Qty:
-                  </label>
-                  <select
-                    id="qty-mobile"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                    className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
+              {/* Quantity */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-700">Qty:</span>
+                <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    className="px-3 py-1.5 hover:bg-gray-100 transition-colors"
+                    aria-label="Decrease quantity"
                   >
-                    {quantityOptions.map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                  </select>
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="px-4 py-1.5 text-sm font-medium border-x border-gray-300">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => setQuantity((q) => Math.min(10, q + 1))}
+                    className="px-3 py-1.5 hover:bg-gray-100 transition-colors"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
                 </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={handleAddToCart}
-                  disabled={!product.inStock}
-                  className="w-full bg-[#FF9900] hover:bg-[#e88a00] text-gray-900 font-semibold py-2.5 rounded-full text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_8px_rgba(255,153,0,0.35)]"
-                >
-                  {addedToCart ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Check size={16} /> Added to Cart
-                    </span>
-                  ) : (
-                    "Add to Cart"
-                  )}
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={handleBuyNow}
-                  disabled={!product.inStock}
-                  className="w-full bg-[#FFD814] hover:bg-[#f0c800] text-gray-900 font-semibold py-2.5 rounded-full text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Buy Now
-                </motion.button>
               </div>
 
-              {/* Wishlist + Share */}
-              <div className="flex items-center gap-4 mt-1">
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setWishlisted((w) => !w)}
-                  className="flex items-center gap-1.5 text-sm text-[#0066C0] hover:text-[#FF9900] transition-colors"
-                >
-                  <Heart
-                    size={16}
-                    className={wishlisted ? "fill-red-500 text-red-500" : ""}
-                  />
-                  {wishlisted ? "Saved to Wishlist" : "Add to Wish List"}
-                </motion.button>
-                <button className="flex items-center gap-1.5 text-sm text-[#0066C0] hover:text-[#FF9900] transition-colors">
-                  <Share2 size={16} />
-                  Share
-                </button>
-              </div>
+              {/* Add to Cart */}
+              <button
+                onClick={handleAddToCart}
+                disabled={!PRODUCT.inStock}
+                className="w-full py-2.5 rounded-full font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 bg-[#10B981] hover:bg-[#059669] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {addedToCart ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Added to Cart!
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-4 h-4" />
+                    Add to Cart
+                  </>
+                )}
+              </button>
+
+              {/* Buy Now */}
+              <Link
+                href="/checkout"
+                className="w-full py-2.5 rounded-full font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 bg-[#3B82F6] hover:bg-[#1D4ED8] text-white"
+              >
+                Buy Now
+              </Link>
 
               {/* Trust badges */}
-              <div className="flex flex-wrap gap-4 mt-2 pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                  <Shield size={14} className="text-green-600" />
+              <div className="border-t border-gray-100 pt-3 space-y-2">
+                <div className="flex items-center gap-2 text-xs text-gray-600">
+                  <Shield className="w-4 h-4 text-[#10B981]" />
                   Secure transaction
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                  <RotateCcw size={14} className="text-blue-600" />
-                  {product.returnDays}-day returns
+                <div className="flex items-center gap-2 text-xs text-gray-600">
+                  <RotateCcw className="w-4 h-4 text-[#10B981]" />
+                  Free 30-day returns
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                  <Truck size={14} className="text-[#FF9900]" />
-                  Free shipping
+                <div className="flex items-center gap-2 text-xs text-gray-600">
+                  <Truck className="w-4 h-4 text-[#10B981]" />
+                  Ships from ShopNow
                 </div>
               </div>
-            </motion.div>
 
-            {/* ── Buy box (desktop) ── */}
-            <motion.div
-              variants={slideInRight}
-              initial="hidden"
-              animate="visible"
-              className="hidden lg:flex flex-col gap-4 w-[240px] xl:w-[260px] flex-shrink-0"
-            >
-              <div className="border border-gray-200 rounded-xl p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_-4px_rgba(0,0,0,0.08)] flex flex-col gap-4">
-                {/* Price */}
-                <div>
-                  <span className="text-2xl font-medium text-gray-900">
-                    <sup className="text-sm align-super">$</sup>
-                    {Math.floor(product.price)}
-                    <sup className="text-sm align-super">
-                      {((product.price % 1) * 100).toFixed(0).padStart(2, "0")}
-                    </sup>
-                  </span>
-                </div>
-
-                {/* Prime */}
-                {product.prime && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="bg-[#00A8E0] text-white text-xs font-bold px-1.5 py-0.5 rounded tracking-wide">
-                      prime
-                    </span>
-                    <span className="text-xs text-gray-600">FREE Delivery</span>
-                  </div>
-                )}
-
-                {/* Delivery */}
-                <div className="text-sm text-gray-700">
-                  <Truck size={14} className="inline mr-1 text-gray-500" />
-                  Arrives:{" "}
-                  <span className="font-semibold text-gray-900">{product.deliveryDate}</span>
-                </div>
-
-                {/* Stock */}
-                {product.inStock ? (
-                  <p className="text-green-700 font-semibold text-base">In Stock</p>
-                ) : (
-                  <p className="text-red-600 font-semibold text-base">Out of Stock</p>
-                )}
-
-                {/* Quantity selector */}
-                <div className="flex items-center gap-2">
-                  <label htmlFor="qty-desktop" className="text-sm font-medium text-gray-700">
-                    Qty:
-                  </label>
-                  <select
-                    id="qty-desktop"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                    className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900] flex-1"
-                  >
-                    {quantityOptions.map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Add to Cart */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={handleAddToCart}
-                  disabled={!product.inStock}
-                  className="w-full bg-[#FF9900] hover:bg-[#e88a00] text-gray-900 font-semibold py-2.5 rounded-full text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_8px_rgba(255,153,0,0.35)]"
-                >
-                  {addedToCart ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Check size={16} /> Added to Cart
-                    </span>
-                  ) : (
-                    "Add to Cart"
-                  )}
-                </motion.button>
-
-                {/* Buy Now */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={handleBuyNow}
-                  disabled={!product.inStock}
-                  className="w-full bg-[#FFD814] hover:bg-[#f0c800] text-gray-900 font-semibold py-2.5 rounded-full text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Buy Now
-                </motion.button>
-
-                {/* Secure transaction */}
-                <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <Shield size={12} className="text-green-600" />
-                  Secure transaction
-                </div>
-
-                <div className="border-t border-gray-100 pt-3 space-y-1.5 text-xs text-gray-600">
-                  <div className="flex justify-between">
-                    <span>Ships from</span>
-                    <span className="font-medium text-gray-800">{APP_NAME}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Sold by</span>
-                    <span className="font-medium text-gray-800">{product.brand}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Returns</span>
-                    <span className="font-medium text-gray-800">
-                      {product.returnDays} days
-                    </span>
-                  </div>
-                </div>
-
-                {/* Wishlist */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setWishlisted((w) => !w)}
-                  className="w-full border border-gray-300 hover:border-[#FF9900] text-gray-700 hover:text-[#FF9900] font-medium py-2 rounded-full text-sm transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                  <Heart
-                    size={14}
-                    className={wishlisted ? "fill-red-500 text-red-500" : ""}
-                  />
-                  {wishlisted ? "Saved" : "Add to Wish List"}
-                </motion.button>
-              </div>
-            </motion.div>
-          </div>
+              {/* ASIN */}
+              <p className="text-xs text-gray-400">
+                ASIN: <span className="font-mono">{PRODUCT.asin}</span>
+              </p>
+            </div>
+          </motion.div>
         </div>
 
-        {/* ── Tabbed section ── */}
-        <motion.div
-          variants={fadeInUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-60px" }}
-          className="bg-white rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_-4px_rgba(0,0,0,0.08)] overflow-hidden mb-6"
-        >
-          {/* Tab bar */}
-          <div className="flex border-b border-gray-200 overflow-x-auto">
+        {/* ── Tabs: Description / Specs / Reviews ── */}
+        <div className="mt-10">
+          {/* Tab nav */}
+          <div className="flex border-b border-gray-200 gap-1">
             {(["description", "specs", "reviews"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-4 text-sm font-semibold whitespace-nowrap transition-all duration-200 border-b-2 -mb-px ${
+                className={`px-5 py-2.5 text-sm font-medium capitalize transition-colors duration-150 border-b-2 -mb-px ${
                   activeTab === tab
-                    ? "border-[#FF9900] text-[#FF9900]"
+                    ? "border-[#10B981] text-[#10B981]"
                     : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
                 }`}
               >
-                {tab === "description"
-                  ? "Product Description"
-                  : tab === "specs"
-                  ? "Specifications"
-                  : `Customer Reviews (${product.reviewCount.toLocaleString("en-US")})`}
+                {tab === "reviews" ? `Reviews (${PRODUCT.reviewCount.toLocaleString("en-US")})` : tab}
               </button>
             ))}
           </div>
 
           {/* Tab content */}
-          <AnimatePresence mode="wait">
+          <div className="py-6">
+            {/* Description */}
             {activeTab === "description" && (
               <motion.div
-                key="description"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="p-6 sm:p-8"
+                variants={fadeInUp}
+                initial="hidden"
+                animate="visible"
+                className="max-w-3xl"
               >
-                <h2 className="text-lg font-bold text-gray-900 mb-4">About this item</h2>
-                <p className="text-gray-700 leading-relaxed mb-6 text-pretty">
-                  {product.description}
-                </p>
-                <h3 className="text-base font-bold text-gray-900 mb-3">Key Features</h3>
-                <motion.ul
-                  variants={staggerContainer}
-                  initial="hidden"
-                  animate="visible"
-                  className="space-y-2"
-                >
-                  {product.features.map((feat, i) => (
-                    <motion.li
-                      key={i}
-                      variants={fadeInUp}
-                      className="flex items-start gap-3 text-sm text-gray-700"
-                    >
-                      <span className="w-5 h-5 rounded-full bg-[#FF9900]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check size={11} className="text-[#FF9900]" />
-                      </span>
-                      {feat}
-                    </motion.li>
+                <h2 className="text-lg font-semibold text-gray-900 mb-3">Product Description</h2>
+                <p className="text-gray-700 leading-relaxed">{PRODUCT.description}</p>
+                <ul className="mt-4 space-y-2">
+                  {PRODUCT.highlights.map((h, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                      <Check className="w-4 h-4 text-[#10B981] mt-0.5 shrink-0" />
+                      {h}
+                    </li>
                   ))}
-                </motion.ul>
+                </ul>
               </motion.div>
             )}
 
+            {/* Specs */}
             {activeTab === "specs" && (
               <motion.div
-                key="specs"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="p-6 sm:p-8"
+                variants={fadeInUp}
+                initial="hidden"
+                animate="visible"
+                className="max-w-2xl"
               >
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Technical Specifications</h2>
-                <div className="overflow-hidden rounded-xl border border-gray-200">
-                  <table className="w-full text-sm">
-                    <tbody>
-                      {product.specs.map((spec, i) => (
-                        <tr
-                          key={spec.label}
-                          className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}
-                        >
-                          <td className="px-5 py-3 font-medium text-gray-700 w-1/3 border-r border-gray-200">
-                            {spec.label}
-                          </td>
-                          <td className="px-5 py-3 text-gray-900">{spec.value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Technical Specifications</h2>
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  {PRODUCT.specs.map((spec, i) => (
+                    <div
+                      key={spec.label}
+                      className={`flex text-sm ${
+                        i % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      }`}
+                    >
+                      <span className="w-48 px-4 py-3 font-medium text-gray-700 shrink-0">
+                        {spec.label}
+                      </span>
+                      <span className="px-4 py-3 text-gray-900">{spec.value}</span>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             )}
 
+            {/* Reviews */}
             {activeTab === "reviews" && (
               <motion.div
-                key="reviews"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="p-6 sm:p-8"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+                className="max-w-3xl"
               >
-                <h2 className="text-lg font-bold text-gray-900 mb-6">Customer Reviews</h2>
-
-                {/* Rating summary */}
-                <div className="flex flex-col sm:flex-row gap-8 mb-8 pb-8 border-b border-gray-200">
-                  {/* Overall score */}
-                  <div className="flex flex-col items-center justify-center gap-2 flex-shrink-0">
-                    <span className="text-5xl font-bold text-gray-900">
-                      {product.rating.toFixed(1)}
-                    </span>
-                    <StarRating rating={product.rating} size={20} />
+                <div className="flex flex-col sm:flex-row gap-8 mb-8">
+                  {/* Overall rating */}
+                  <div className="flex flex-col items-center gap-2 shrink-0">
+                    <span className="text-5xl font-bold text-gray-900">{PRODUCT.rating}</span>
+                    <StarRating rating={PRODUCT.rating} size="lg" />
                     <span className="text-sm text-gray-500">
-                      {product.reviewCount.toLocaleString("en-US")} global ratings
+                      {PRODUCT.reviewCount.toLocaleString("en-US")} ratings
                     </span>
                   </div>
 
-                  {/* Distribution bars */}
-                  <div className="flex-1 space-y-2">
-                    {RATING_DIST.map((row) => (
-                      <div key={row.stars} className="flex items-center gap-3">
-                        <button className="text-[#0066C0] text-sm hover:underline w-14 text-right flex-shrink-0">
-                          {row.stars} star
-                        </button>
-                        <div className="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            whileInView={{ width: `${row.pct}%` }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 * (5 - row.stars) }}
-                            className="h-full bg-[#FF9900] rounded-full"
-                          />
-                        </div>
-                        <span className="text-[#0066C0] text-sm w-10 flex-shrink-0">
-                          {row.pct}%
-                        </span>
-                      </div>
+                  {/* Rating bars */}
+                  <div className="flex-1 space-y-1.5">
+                    {ratingBars.map((bar) => (
+                      <RatingBar key={bar.label} label={bar.label} pct={bar.pct} />
                     ))}
                   </div>
                 </div>
 
-                {/* Review cards */}
-                <motion.div
-                  variants={staggerContainer}
-                  initial="hidden"
-                  animate="visible"
-                  className="space-y-6"
-                >
-                  {MOCK_REVIEWS.map((review) => (
-                    <motion.article
+                {/* Review list */}
+                <div className="space-y-6">
+                  {REVIEWS.map((review) => (
+                    <motion.div
                       key={review.id}
                       variants={fadeInUp}
-                      className="border-b border-gray-100 pb-6 last:border-0 last:pb-0"
+                      className="border-b border-gray-100 pb-6 last:border-0"
                     >
                       {/* Reviewer */}
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                          <img
-                            src={review.avatar}
-                            alt={review.author}
-                            className="w-full h-full object-cover"
-                          />
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-9 h-9 rounded-full bg-[#0F2027] text-white flex items-center justify-center font-bold text-sm">
+                          {review.avatar}
                         </div>
-                        <span className="font-semibold text-sm text-gray-900">
-                          {review.author}
-                        </span>
+                        <span className="font-medium text-gray-900 text-sm">{review.author}</span>
                       </div>
 
                       {/* Stars + title */}
                       <div className="flex items-center gap-2 mb-1">
-                        <StarRating rating={review.rating} size={14} />
-                        <span className="font-semibold text-sm text-gray-900">
-                          {review.title}
-                        </span>
+                        <StarRating rating={review.rating} />
+                        <span className="font-semibold text-gray-900 text-sm">{review.title}</span>
                       </div>
 
                       {/* Meta */}
-                      <div className="flex items-center gap-2 mb-3 text-xs text-gray-500">
-                        <span>Reviewed on {review.date}</span>
+                      <p className="text-xs text-gray-500 mb-2">
                         {review.verified && (
-                          <>
-                            <span>|</span>
-                            <span className="text-[#C45500]">Verified Purchase</span>
-                          </>
-                        )}
-                      </div>
-
-                      {/* Body */}
-                      <p className="text-sm text-gray-700 leading-relaxed mb-3">
-                        {review.body}
+                          <span className="text-[#10B981] font-medium">Verified Purchase</span>
+                        )}{" "}
+                        · {review.date}
                       </p>
 
+                      {/* Body */}
+                      <p className="text-sm text-gray-700 leading-relaxed">{review.body}</p>
+
                       {/* Helpful */}
-                      <div className="flex items-center gap-3 text-xs text-gray-500">
-                        <span>
-                          {(review.helpful + (helpfulVotes[review.id] === "up" ? 1 : 0)).toLocaleString("en-US")} people found this helpful
+                      <div className="flex items-center gap-3 mt-3">
+                        <span className="text-xs text-gray-500">
+                          {review.helpful} people found this helpful
                         </span>
-                        <button
-                          onClick={() => handleHelpful(review.id, "up")}
-                          className={`flex items-center gap-1 px-2.5 py-1 rounded border transition-all duration-200 ${
-                            helpfulVotes[review.id] === "up"
-                              ? "border-[#FF9900] text-[#FF9900] bg-[#FF9900]/5"
-                              : "border-gray-300 text-gray-600 hover:border-gray-500"
-                          }`}
-                        >
-                          <ThumbsUp size={12} />
+                        <button className="flex items-center gap-1 text-xs text-gray-600 border border-gray-300 rounded px-2 py-1 hover:bg-gray-50 transition-colors">
+                          <ThumbsUp className="w-3 h-3" />
                           Helpful
                         </button>
-                        <button
-                          onClick={() => handleHelpful(review.id, "down")}
-                          className={`flex items-center gap-1 px-2.5 py-1 rounded border transition-all duration-200 ${
-                            helpfulVotes[review.id] === "down"
-                              ? "border-red-400 text-red-500 bg-red-50"
-                              : "border-gray-300 text-gray-600 hover:border-gray-500"
-                          }`}
-                        >
-                          <ThumbsDown size={12} />
+                        <button className="flex items-center gap-1 text-xs text-gray-600 border border-gray-300 rounded px-2 py-1 hover:bg-gray-50 transition-colors">
+                          <ThumbsDown className="w-3 h-3" />
+                          Not helpful
                         </button>
                       </div>
-                    </motion.article>
+                    </motion.div>
                   ))}
-                </motion.div>
-
-                {/* See all reviews */}
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <button className="text-[#0066C0] text-sm hover:text-[#FF9900] hover:underline transition-colors font-medium flex items-center gap-1">
-                    See all {product.reviewCount.toLocaleString("en-US")} reviews
-                    <ChevronRight size={14} />
-                  </button>
                 </div>
               </motion.div>
             )}
-          </AnimatePresence>
-        </motion.div>
+          </div>
+        </div>
 
-        {/* ── Related products strip ── */}
-        <motion.section
-          variants={fadeInUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-60px" }}
-          className="bg-white rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_-4px_rgba(0,0,0,0.08)] p-6 sm:p-8"
-        >
-          <h2 className="text-lg font-bold text-gray-900 mb-5">
-            Customers also viewed
-          </h2>
+        {/* ── Related Products ── */}
+        <div className="mt-10">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Customers also viewed</h2>
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+            viewport={{ once: true, margin: "-60px" }}
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
           >
-            {[
-              {
-                id: 101,
-                title: "Bose QuietComfort 45 Headphones",
-                price: 229.0,
-                rating: 4.5,
-                image: "/images/bose-quietcomfort-45-headphones.jpg",
-              },
-              {
-                id: 102,
-                title: "Apple AirPods Pro (2nd Gen)",
-                price: 189.0,
-                rating: 4.8,
-                image: "https://m.media-amazon.com/images/I/61sRKTAfrhL._AC_UF350,350_QL80_.jpg",
-              },
-              {
-                id: 103,
-                title: "Jabra Evolve2 85 Wireless Headset",
-                price: 349.0,
-                rating: 4.4,
-                image: "/images/jabra-evolve2-85-wireless-headset.jpg",
-              },
-              {
-                id: 104,
-                title: "Sennheiser Momentum 4 Wireless",
-                price: 279.95,
-                rating: 4.6,
-                image: "/images/sennheiser-momentum-4-wireless.jpg",
-              },
-              {
-                id: 105,
-                title: "Sony WF-1000XM5 Earbuds",
-                price: 249.99,
-                rating: 4.7,
-                image: "/images/sony-wf1000xm5-earbuds.jpg",
-              },
-            ].map((item) => (
+            {RELATED_PRODUCTS.map((product) => (
               <motion.div
-                key={item.id}
+                key={product.id}
                 variants={scaleIn}
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className="group cursor-pointer"
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200 group"
               >
-                <Link href={`/product?id=${item.id}`}>
-                  <div className="aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-100 mb-2 group-hover:border-[#FF9900]/40 transition-colors duration-200">
+                <Link href="/product">
+                  <div className="aspect-square bg-gray-50 rounded-md overflow-hidden mb-3">
                     <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+                      src={product.image}
+                      alt={product.title}
+                      className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src =
+                          "https://via.placeholder.com/200x200?text=Product";
+                      }}
                     />
                   </div>
-                  <p className="text-xs text-gray-800 font-medium line-clamp-2 mb-1 group-hover:text-[#0066C0] transition-colors">
-                    {item.title}
-                  </p>
-                  <div className="flex items-center gap-1 mb-0.5">
-                    <StarRating rating={item.rating} size={11} />
+                  <h3 className="text-sm text-gray-800 font-medium line-clamp-2 mb-2 group-hover:text-[#10B981] transition-colors">
+                    {product.title}
+                  </h3>
+                  <div className="flex items-center gap-1 mb-1">
+                    <StarRating rating={product.rating} size="sm" />
+                    <span className="text-xs text-gray-500">
+                      ({product.reviewCount.toLocaleString("en-US")})
+                    </span>
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">
-                    ${item.price.toFixed(2)}
-                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-bold text-gray-900">${product.price.toFixed(2)}</span>
+                    <span className="text-xs text-gray-400 line-through">
+                      ${product.originalPrice.toFixed(2)}
+                    </span>
+                  </div>
+                  {product.prime && (
+                    <span className="mt-1 inline-block bg-[#3B82F6] text-white text-xs font-bold px-1.5 py-0.5 rounded">
+                      prime
+                    </span>
+                  )}
                 </Link>
               </motion.div>
             ))}
           </motion.div>
-        </motion.section>
+        </div>
       </div>
-    </main>
-  );
-}
-
-export default function ProductPage() {
-  return (
-    <Suspense fallback={null}>
-      <ProductPageInner />
-    </Suspense>
+    </div>
   );
 }

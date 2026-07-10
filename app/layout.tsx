@@ -32,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="bg-[#F3F3F3] text-[#131921] antialiased min-h-screen flex flex-col">
+      <body className="bg-[#F0F7F4] text-[#0F2027] antialiased min-h-screen flex flex-col">
         <LocaleProvider>
           <LanguageToggle />
           <Navbar />

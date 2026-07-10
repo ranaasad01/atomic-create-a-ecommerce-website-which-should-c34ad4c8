@@ -1,776 +1,812 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { User, Mail, Phone, MapPin, Lock, Bell, ShoppingCart, Heart, Star, Package, CreditCard, Settings, Edit, Check, X, ChevronRight, Shield, Gift, Truck, AlertCircle } from 'lucide-react';
-import { useTranslations } from "next-intl";
-import { fadeInUp, fadeIn, staggerContainer, scaleIn } from "@/lib/motion";
+import { User, Mail, Phone, MapPin, Lock, Bell, CreditCard, Shield, Camera, Check, ChevronRight, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { fadeInUp, staggerContainer, scaleIn } from "@/lib/motion";
 
-const MOCK_USER = {
-  name: "Alexandra Johnson",
-  email: "alex.johnson@email.com",
-  phone: "+1 (555) 234-7890",
-  memberSince: "March 2021",
-  avatar: "/images/user-profile-avatar.jpg",
-  tier: "Prime Member",
-  points: 4820,
-  address: {
-    line1: "142 Maple Street",
-    line2: "Apt 3B",
-    city: "San Francisco",
-    state: "CA",
-    zip: "94102",
-    country: "United States",
-  },
-};
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-const MOCK_ORDERS = [
-  {
-    id: "ORD-2024-8821",
-    date: "Dec 18, 2024",
-    status: "Delivered",
-    total: 129.99,
-    items: 3,
-    image: "/images/wireless-noise-cancelling-headphones.jpg",
-    product: "Wireless Noise-Cancelling Headphones",
-  },
-  {
-    id: "ORD-2024-8654",
-    date: "Dec 10, 2024",
-    status: "In Transit",
-    total: 54.49,
-    items: 2,
-    image: "/images/minimalist-leather-watch.jpg",
-    product: "Minimalist Leather Watch",
-  },
-  {
-    id: "ORD-2024-8401",
-    date: "Nov 29, 2024",
-    status: "Delivered",
-    total: 239.0,
-    items: 1,
-    image: "/images/smart-home-speaker.jpg",
-    product: "Smart Home Speaker",
-  },
-  {
-    id: "ORD-2024-8102",
-    date: "Nov 14, 2024",
-    status: "Delivered",
-    total: 78.25,
-    items: 4,
-    image: "/images/kitchen-essentials-set.jpg",
-    product: "Kitchen Essentials Set",
-  },
+interface ProfileForm {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  birthDate: string;
+  gender: string;
+}
+
+interface AddressForm {
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+}
+
+interface PasswordForm {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface NotificationSettings {
+  orderUpdates: boolean;
+  promotions: boolean;
+  newArrivals: boolean;
+  priceDrops: boolean;
+  newsletter: boolean;
+  smsAlerts: boolean;
+}
+
+type ActiveTab = "profile" | "address" | "security" | "notifications" | "payment";
+
+// ─── Mock Data ────────────────────────────────────────────────────────────────
+
+const SAVED_CARDS = [
+  { id: 1, type: "Visa", last4: "4242", expiry: "08/27", isDefault: true },
+  { id: 2, type: "Mastercard", last4: "8888", expiry: "03/26", isDefault: false },
 ];
 
-const MOCK_WISHLIST = [
-  {
-    id: 1,
-    name: "4K Ultra HD Smart TV 55\"",
-    price: 499.99,
-    rating: 4.6,
-    reviews: 2341,
-    image: "/images/4k-ultra-hd-smart-tv.jpg",
-  },
-  {
-    id: 2,
-    name: "Ergonomic Office Chair",
-    price: 289.0,
-    rating: 4.8,
-    reviews: 987,
-    image: "/images/ergonomic-office-chair.jpg",
-  },
-  {
-    id: 3,
-    name: "Stainless Steel Cookware Set",
-    price: 149.95,
-    rating: 4.5,
-    reviews: 1543,
-    image: "/images/stainless-steel-cookware-set.jpg",
-  },
-];
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
-const MOCK_PAYMENT_METHODS = [
-  { id: 1, type: "Visa", last4: "4242", expiry: "08/26", isDefault: true },
-  { id: 2, type: "Mastercard", last4: "8371", expiry: "03/27", isDefault: false },
-];
-
-const MOCK_NOTIFICATIONS = [
-  { id: 1, label: "Order updates", enabled: true },
-  { id: 2, label: "Promotional emails", enabled: false },
-  { id: 3, label: "Price drop alerts", enabled: true },
-  { id: 4, label: "New arrivals", enabled: false },
-  { id: 5, label: "Review reminders", enabled: true },
-];
-
-const STAT_CARDS = [
-  { label: "Total Orders", value: "47", icon: Package, color: "text-blue-500", bg: "bg-blue-50" },
-  { label: "Wishlist Items", value: "12", icon: Heart, color: "text-rose-500", bg: "bg-rose-50" },
-  { label: "Reward Points", value: "4,820", icon: Gift, color: "text-amber-500", bg: "bg-amber-50" },
-  { label: "Reviews Given", value: "23", icon: Star, color: "text-purple-500", bg: "bg-purple-50" },
-];
-
-const STATUS_COLORS: Record<string, string> = {
-  Delivered: "bg-green-100 text-green-700",
-  "In Transit": "bg-blue-100 text-blue-700",
-  Processing: "bg-yellow-100 text-yellow-700",
-  Cancelled: "bg-red-100 text-red-700",
-};
-
-type Tab = "overview" | "orders" | "wishlist" | "payments" | "settings";
-
-function StarRating({ rating }: { rating: number }) {
+function SectionHeader({ title, description }: { title: string; description: string }) {
   return (
-    <span className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Star
-          key={s}
-          size={12}
-          className={s <= Math.round(rating) ? "fill-[#FF9900] text-[#FF9900]" : "text-gray-300"}
-        />
-      ))}
-    </span>
+    <div className="mb-6">
+      <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+      <p className="text-sm text-gray-500 mt-1">{description}</p>
+    </div>
   );
 }
 
-export default function AccountProfilePage() {
-  const t = useTranslations();
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [profileForm, setProfileForm] = useState({
-    name: MOCK_USER.name,
-    email: MOCK_USER.email,
-    phone: MOCK_USER.phone,
+function FormField({
+  label,
+  id,
+  children,
+  required,
+}: {
+  label: string;
+  id: string;
+  children: React.ReactNode;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+        {required && <span className="text-red-500 ml-0.5">*</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+const inputClass =
+  "w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all duration-200";
+
+// ─── Tab: Profile ─────────────────────────────────────────────────────────────
+
+function ProfileTab() {
+  const [form, setForm] = useState<ProfileForm>({
+    firstName: "Alex",
+    lastName: "Johnson",
+    email: "alex.johnson@email.com",
+    phone: "+1 (555) 234-5678",
+    birthDate: "1990-06-15",
+    gender: "prefer-not",
   });
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-  const handleProfileSave = () => {
-    setEditingProfile(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 2500);
+  const handleChange = (field: keyof ProfileForm, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setSaved(false);
   };
 
-  const toggleNotification = (id: number) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, enabled: !n.enabled } : n))
-    );
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   };
 
-  const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: "overview", label: "Overview", icon: User },
-    { key: "orders", label: "Orders", icon: Package },
-    { key: "wishlist", label: "Wishlist", icon: Heart },
-    { key: "payments", label: "Payments", icon: CreditCard },
-    { key: "settings", label: "Settings", icon: Settings },
+  return (
+    <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+      <SectionHeader
+        title="Personal Information"
+        description="Update your personal details and how we can reach you."
+      />
+
+      {/* Avatar */}
+      <div className="flex items-center gap-5 mb-8 p-4 bg-[#F0FDF4] rounded-xl border border-[#10B981]/20">
+        <div className="relative">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#10B981] to-[#0F2027] flex items-center justify-center text-white text-2xl font-bold shadow-md">
+            {form.firstName[0]}{form.lastName[0]}
+          </div>
+          <button
+            type="button"
+            className="absolute -bottom-1 -right-1 w-7 h-7 bg-[#10B981] rounded-full flex items-center justify-center shadow-md hover:bg-[#059669] transition-colors"
+            aria-label="Change avatar"
+          >
+            <Camera className="w-3.5 h-3.5 text-white" />
+          </button>
+        </div>
+        <div>
+          <p className="font-semibold text-gray-900">{form.firstName} {form.lastName}</p>
+          <p className="text-sm text-gray-500">{form.email}</p>
+          <button
+            type="button"
+            className="text-xs text-[#10B981] hover:text-[#059669] font-medium mt-1 transition-colors"
+          >
+            Change photo
+          </button>
+        </div>
+      </div>
+
+      <form onSubmit={handleSave} className="space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <FormField label="First Name" id="firstName" required>
+            <input
+              id="firstName"
+              type="text"
+              value={form.firstName}
+              onChange={(e) => handleChange("firstName", e.target.value)}
+              className={inputClass}
+            />
+          </FormField>
+          <FormField label="Last Name" id="lastName" required>
+            <input
+              id="lastName"
+              type="text"
+              value={form.lastName}
+              onChange={(e) => handleChange("lastName", e.target.value)}
+              className={inputClass}
+            />
+          </FormField>
+        </div>
+
+        <FormField label="Email Address" id="email" required>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              id="email"
+              type="email"
+              value={form.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              className={`${inputClass} pl-9`}
+            />
+          </div>
+        </FormField>
+
+        <FormField label="Phone Number" id="phone">
+          <div className="relative">
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              id="phone"
+              type="tel"
+              value={form.phone}
+              onChange={(e) => handleChange("phone", e.target.value)}
+              className={`${inputClass} pl-9`}
+            />
+          </div>
+        </FormField>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <FormField label="Date of Birth" id="birthDate">
+            <input
+              id="birthDate"
+              type="date"
+              value={form.birthDate}
+              onChange={(e) => handleChange("birthDate", e.target.value)}
+              className={inputClass}
+            />
+          </FormField>
+          <FormField label="Gender" id="gender">
+            <select
+              id="gender"
+              value={form.gender}
+              onChange={(e) => handleChange("gender", e.target.value)}
+              className={inputClass}
+            >
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="non-binary">Non-binary</option>
+              <option value="prefer-not">Prefer not to say</option>
+            </select>
+          </FormField>
+        </div>
+
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            type="submit"
+            className="px-6 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white text-sm font-semibold rounded-md transition-colors duration-200 flex items-center gap-2"
+          >
+            {saved ? (
+              <><Check className="w-4 h-4" /> Saved!</>
+            ) : (
+              "Save Changes"
+            )}
+          </button>
+          <button
+            type="button"
+            className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors duration-200"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </motion.div>
+  );
+}
+
+// ─── Tab: Address ─────────────────────────────────────────────────────────────
+
+function AddressTab() {
+  const [form, setForm] = useState<AddressForm>({
+    addressLine1: "123 Main Street",
+    addressLine2: "Apt 4B",
+    city: "San Francisco",
+    state: "California",
+    zip: "94102",
+    country: "United States",
+  });
+  const [saved, setSaved] = useState(false);
+
+  const handleChange = (field: keyof AddressForm, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setSaved(false);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  return (
+    <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+      <SectionHeader
+        title="Default Shipping Address"
+        description="This address will be pre-filled at checkout for faster ordering."
+      />
+
+      <div className="flex items-start gap-3 p-4 bg-[#F0FDF4] border border-[#10B981]/30 rounded-lg mb-6">
+        <MapPin className="w-5 h-5 text-[#10B981] flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium text-gray-800">Current default address</p>
+          <p className="text-sm text-gray-600 mt-0.5">
+            {form.addressLine1}{form.addressLine2 ? `, ${form.addressLine2}` : ""}, {form.city}, {form.state} {form.zip}
+          </p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSave} className="space-y-5">
+        <FormField label="Address Line 1" id="addressLine1" required>
+          <input
+            id="addressLine1"
+            type="text"
+            value={form.addressLine1}
+            onChange={(e) => handleChange("addressLine1", e.target.value)}
+            placeholder="Street address, P.O. box"
+            className={inputClass}
+          />
+        </FormField>
+
+        <FormField label="Address Line 2" id="addressLine2">
+          <input
+            id="addressLine2"
+            type="text"
+            value={form.addressLine2}
+            onChange={(e) => handleChange("addressLine2", e.target.value)}
+            placeholder="Apartment, suite, unit, building, floor, etc."
+            className={inputClass}
+          />
+        </FormField>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <FormField label="City" id="city" required>
+            <input
+              id="city"
+              type="text"
+              value={form.city}
+              onChange={(e) => handleChange("city", e.target.value)}
+              className={inputClass}
+            />
+          </FormField>
+          <FormField label="State" id="state" required>
+            <input
+              id="state"
+              type="text"
+              value={form.state}
+              onChange={(e) => handleChange("state", e.target.value)}
+              className={inputClass}
+            />
+          </FormField>
+          <FormField label="ZIP Code" id="zip" required>
+            <input
+              id="zip"
+              type="text"
+              value={form.zip}
+              onChange={(e) => handleChange("zip", e.target.value)}
+              className={inputClass}
+            />
+          </FormField>
+        </div>
+
+        <FormField label="Country" id="country" required>
+          <select
+            id="country"
+            value={form.country}
+            onChange={(e) => handleChange("country", e.target.value)}
+            className={inputClass}
+          >
+            <option>United States</option>
+            <option>Canada</option>
+            <option>United Kingdom</option>
+            <option>Australia</option>
+            <option>Germany</option>
+            <option>France</option>
+          </select>
+        </FormField>
+
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            type="submit"
+            className="px-6 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white text-sm font-semibold rounded-md transition-colors duration-200 flex items-center gap-2"
+          >
+            {saved ? (
+              <><Check className="w-4 h-4" /> Saved!</>
+            ) : (
+              "Save Address"
+            )}
+          </button>
+          <button
+            type="button"
+            className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors duration-200"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </motion.div>
+  );
+}
+
+// ─── Tab: Security ────────────────────────────────────────────────────────────
+
+function SecurityTab() {
+  const [form, setForm] = useState<PasswordForm>({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (field: keyof PasswordForm, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setError("");
+    setSaved(false);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (form.newPassword !== form.confirmPassword) {
+      setError("New passwords do not match.");
+      return;
+    }
+    if (form.newPassword.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    setSaved(true);
+    setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  const passwordStrength = (pwd: string): { label: string; color: string; width: string } => {
+    if (pwd.length === 0) return { label: "", color: "bg-gray-200", width: "w-0" };
+    if (pwd.length < 6) return { label: "Weak", color: "bg-red-500", width: "w-1/4" };
+    if (pwd.length < 10) return { label: "Fair", color: "bg-yellow-500", width: "w-2/4" };
+    if (pwd.length < 14) return { label: "Good", color: "bg-[#10B981]", width: "w-3/4" };
+    return { label: "Strong", color: "bg-[#059669]", width: "w-full" };
+  };
+
+  const strength = passwordStrength(form.newPassword);
+
+  return (
+    <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+      <SectionHeader
+        title="Password & Security"
+        description="Keep your account secure by using a strong, unique password."
+      />
+
+      <div className="flex items-start gap-3 p-4 bg-[#F0FDF4] border border-[#10B981]/30 rounded-lg mb-6">
+        <Shield className="w-5 h-5 text-[#10B981] flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium text-gray-800">Two-factor authentication</p>
+          <p className="text-sm text-gray-600 mt-0.5">Add an extra layer of security to your account.</p>
+          <button className="text-xs text-[#10B981] hover:text-[#059669] font-medium mt-1.5 transition-colors">
+            Enable 2FA →
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg mb-5 text-sm text-red-700">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          {error}
+        </div>
+      )}
+
+      {saved && (
+        <div className="flex items-center gap-2 p-3 bg-[#F0FDF4] border border-[#10B981]/30 rounded-lg mb-5 text-sm text-[#059669]">
+          <Check className="w-4 h-4 flex-shrink-0" />
+          Password updated successfully!
+        </div>
+      )}
+
+      <form onSubmit={handleSave} className="space-y-5">
+        <FormField label="Current Password" id="currentPassword" required>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              id="currentPassword"
+              type={showCurrent ? "text" : "password"}
+              value={form.currentPassword}
+              onChange={(e) => handleChange("currentPassword", e.target.value)}
+              className={`${inputClass} pl-9 pr-10`}
+              placeholder="Enter current password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowCurrent((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              aria-label={showCurrent ? "Hide password" : "Show password"}
+            >
+              {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+        </FormField>
+
+        <FormField label="New Password" id="newPassword" required>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              id="newPassword"
+              type={showNew ? "text" : "password"}
+              value={form.newPassword}
+              onChange={(e) => handleChange("newPassword", e.target.value)}
+              className={`${inputClass} pl-9 pr-10`}
+              placeholder="Enter new password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowNew((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              aria-label={showNew ? "Hide password" : "Show password"}
+            >
+              {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+          {form.newPassword.length > 0 && (
+            <div className="mt-2">
+              <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all duration-300 ${strength.color} ${strength.width}`} />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Strength: <span className="font-medium">{strength.label}</span></p>
+            </div>
+          )}
+        </FormField>
+
+        <FormField label="Confirm New Password" id="confirmPassword" required>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              id="confirmPassword"
+              type={showConfirm ? "text" : "password"}
+              value={form.confirmPassword}
+              onChange={(e) => handleChange("confirmPassword", e.target.value)}
+              className={`${inputClass} pl-9 pr-10`}
+              placeholder="Confirm new password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirm((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              aria-label={showConfirm ? "Hide password" : "Show password"}
+            >
+              {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+        </FormField>
+
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            type="submit"
+            className="px-6 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white text-sm font-semibold rounded-md transition-colors duration-200"
+          >
+            Update Password
+          </button>
+          <button
+            type="button"
+            className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors duration-200"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </motion.div>
+  );
+}
+
+// ─── Tab: Notifications ───────────────────────────────────────────────────────
+
+function NotificationsTab() {
+  const [settings, setSettings] = useState<NotificationSettings>({
+    orderUpdates: true,
+    promotions: true,
+    newArrivals: false,
+    priceDrops: true,
+    newsletter: false,
+    smsAlerts: true,
+  });
+  const [saved, setSaved] = useState(false);
+
+  const toggle = (key: keyof NotificationSettings) => {
+    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+    setSaved(false);
+  };
+
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  const notificationItems: Array<{ key: keyof NotificationSettings; label: string; description: string }> = [
+    { key: "orderUpdates", label: "Order Updates", description: "Shipping, delivery, and return status notifications" },
+    { key: "promotions", label: "Promotions & Deals", description: "Exclusive offers, flash sales, and discount codes" },
+    { key: "newArrivals", label: "New Arrivals", description: "Be the first to know about new products in your categories" },
+    { key: "priceDrops", label: "Price Drop Alerts", description: "Get notified when items in your wishlist go on sale" },
+    { key: "newsletter", label: "Weekly Newsletter", description: "Curated picks, tips, and shopping guides" },
+    { key: "smsAlerts", label: "SMS Alerts", description: "Text message notifications for critical order updates" },
   ];
 
   return (
-    <main className="min-h-screen bg-[#EAEDED]">
-      {/* Hero banner */}
-      <motion.div
-        variants={fadeIn}
-        initial="hidden"
-        animate="visible"
-        className="bg-[#131921] text-white"
+    <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+      <SectionHeader
+        title="Notification Preferences"
+        description="Choose how and when you want to hear from us."
+      />
+
+      <div className="space-y-4">
+        {notificationItems.map(({ key, label, description }) => (
+          <div
+            key={key}
+            className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:border-[#10B981]/40 transition-colors"
+          >
+            <div>
+              <p className="text-sm font-medium text-gray-900">{label}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => toggle(key)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:ring-offset-2 ${
+                settings[key] ? "bg-[#10B981]" : "bg-gray-200"
+              }`}
+              role="switch"
+              aria-checked={settings[key]}
+              aria-label={label}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                  settings[key] ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6">
+        <button
+          type="button"
+          onClick={handleSave}
+          className="px-6 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white text-sm font-semibold rounded-md transition-colors duration-200 flex items-center gap-2"
+        >
+          {saved ? (
+            <><Check className="w-4 h-4" /> Saved!</>
+          ) : (
+            "Save Preferences"
+          )}
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Tab: Payment ─────────────────────────────────────────────────────────────
+
+function PaymentTab() {
+  return (
+    <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+      <SectionHeader
+        title="Payment Methods"
+        description="Manage your saved cards and payment options."
+      />
+
+      <div className="space-y-3 mb-6">
+        {SAVED_CARDS.map((card) => (
+          <div
+            key={card.id}
+            className={`flex items-center justify-between p-4 rounded-lg border-2 transition-colors ${
+              card.isDefault
+                ? "border-[#10B981] bg-[#F0FDF4]"
+                : "border-gray-200 bg-white hover:border-[#10B981]/40"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-7 bg-gradient-to-br from-[#0F2027] to-[#1A3A4A] rounded flex items-center justify-center">
+                <CreditCard className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">
+                  {card.type} ending in {card.last4}
+                </p>
+                <p className="text-xs text-gray-500">Expires {card.expiry}</p>
+              </div>
+              {card.isDefault && (
+                <span className="text-xs bg-[#10B981] text-white px-2 py-0.5 rounded-full font-medium">
+                  Default
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {!card.isDefault && (
+                <button className="text-xs text-[#10B981] hover:text-[#059669] font-medium transition-colors">
+                  Set default
+                </button>
+              )}
+              <button className="text-xs text-red-500 hover:text-red-700 font-medium transition-colors">
+                Remove
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        className="w-full py-3 border-2 border-dashed border-[#10B981]/40 rounded-lg text-sm text-[#10B981] hover:border-[#10B981] hover:bg-[#F0FDF4] transition-all duration-200 font-medium flex items-center justify-center gap-2"
       >
-        <div className="max-w-[1200px] mx-auto px-4 py-8 flex flex-col sm:flex-row items-center sm:items-end gap-5">
-          {/* Avatar */}
+        <CreditCard className="w-4 h-4" />
+        Add New Payment Method
+      </button>
+    </motion.div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function AccountProfilePage() {
+  const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
+
+  const tabs: Array<{ id: ActiveTab; label: string; icon: React.ReactNode }> = [
+    { id: "profile", label: "Personal Info", icon: <User className="w-4 h-4" /> },
+    { id: "address", label: "Address", icon: <MapPin className="w-4 h-4" /> },
+    { id: "security", label: "Security", icon: <Lock className="w-4 h-4" /> },
+    { id: "notifications", label: "Notifications", icon: <Bell className="w-4 h-4" /> },
+    { id: "payment", label: "Payment", icon: <CreditCard className="w-4 h-4" /> },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#F3F3F3]">
+      {/* Page header */}
+      <div className="bg-[#0F2027] text-white">
+        <div className="max-w-5xl mx-auto px-4 py-8">
           <motion.div
-            variants={scaleIn}
+            variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="relative flex-shrink-0"
+            className="flex items-center gap-4"
           >
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#FF9900] shadow-lg bg-[#232F3E]">
-              <img
-                src={MOCK_USER.avatar}
-                alt={MOCK_USER.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src =
-                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%23232F3E'/%3E%3Ccircle cx='48' cy='36' r='20' fill='%23FF9900'/%3E%3Cellipse cx='48' cy='80' rx='30' ry='20' fill='%23FF9900'/%3E%3C/svg%3E";
-                }}
-              />
-            </div>
-            <span className="absolute -bottom-1 -right-1 bg-[#FF9900] text-[#131921] text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
-              PRIME
-            </span>
-          </motion.div>
-
-          {/* Name + meta */}
-          <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{MOCK_USER.name}</h1>
-            <p className="text-[#AAAAAA] text-sm mt-0.5">{MOCK_USER.email}</p>
-            <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-2">
-              <span className="flex items-center gap-1 text-xs text-[#FF9900] font-semibold">
-                <Shield size={13} /> {MOCK_USER.tier}
-              </span>
-              <span className="flex items-center gap-1 text-xs text-[#AAAAAA]">
-                <Gift size={13} /> {MOCK_USER.points.toLocaleString("en-US")} points
-              </span>
-              <span className="flex items-center gap-1 text-xs text-[#AAAAAA]">
-                <Star size={13} /> Member since {MOCK_USER.memberSince}
-              </span>
-            </div>
+            <motion.div
+              variants={scaleIn}
+              className="w-16 h-16 rounded-full bg-gradient-to-br from-[#10B981] to-[#1A3A4A] flex items-center justify-center text-white text-2xl font-bold shadow-lg"
+            >
+              AJ
+            </motion.div>
+            <motion.div variants={fadeInUp}>
+              <h1 className="text-2xl font-bold">Alex Johnson</h1>
+              <p className="text-[#10B981] text-sm mt-0.5">alex.johnson@email.com</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs bg-[#10B981]/20 text-[#10B981] px-2 py-0.5 rounded-full border border-[#10B981]/30">
+                  Prime Member
+                </span>
+                <span className="text-xs text-gray-400">Member since 2021</span>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Tab bar */}
-      <div className="bg-[#232F3E] sticky top-14 z-30 shadow-md">
-        <div className="max-w-[1200px] mx-auto px-4 flex overflow-x-auto scrollbar-hide gap-1">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all duration-200 focus-visible:outline-none ${
-                  activeTab === tab.key
-                    ? "border-[#FF9900] text-[#FF9900]"
-                    : "border-transparent text-[#CCCCCC] hover:text-white hover:border-white/30"
-                }`}
-              >
-                <Icon size={15} />
-                {tab.label}
-              </button>
-            );
-          })}
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-4 py-2 flex items-center gap-1.5 text-xs text-gray-500">
+          <Link href="/" className="hover:text-[#10B981] transition-colors">Home</Link>
+          <ChevronRight className="w-3 h-3" />
+          <Link href="/account" className="hover:text-[#10B981] transition-colors">Account</Link>
+          <ChevronRight className="w-3 h-3" />
+          <span className="text-gray-800 font-medium">Profile Settings</span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-[1200px] mx-auto px-4 py-8">
-        {/* OVERVIEW TAB */}
-        {activeTab === "overview" && (
-          <motion.div
-            key="overview"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            className="space-y-8"
-          >
-            {/* Stat cards */}
-            <motion.div
-              variants={staggerContainer}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4"
-            >
-              {STAT_CARDS.map((card) => {
-                const Icon = card.icon;
-                return (
-                  <motion.div
-                    key={card.label}
-                    variants={scaleIn}
-                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                    className="bg-white rounded-xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-black/5 flex flex-col gap-3"
-                  >
-                    <div className={`w-10 h-10 rounded-lg ${card.bg} flex items-center justify-center`}>
-                      <Icon size={20} className={card.color} />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900">{card.value}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{card.label}</p>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
-
-            {/* Profile info + address */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Profile card */}
-              <motion.div
-                variants={fadeInUp}
-                className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-black/5 p-6"
-              >
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="font-bold text-gray-900 text-base">Personal Information</h2>
-                  <button
-                    onClick={() => setEditingProfile(!editingProfile)}
-                    className="flex items-center gap-1.5 text-xs text-[#FF9900] font-semibold hover:underline"
-                  >
-                    <Edit size={13} /> Edit
-                  </button>
-                </div>
-                <div className="space-y-4">
-                  {[
-                    { icon: User, label: "Full Name", field: "name" as const },
-                    { icon: Mail, label: "Email", field: "email" as const },
-                    { icon: Phone, label: "Phone", field: "phone" as const },
-                  ].map(({ icon: Icon, label, field }) => (
-                    <div key={field} className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Icon size={15} className="text-gray-500" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-                        {editingProfile ? (
-                          <input
-                            type="text"
-                            value={profileForm[field]}
-                            onChange={(e) =>
-                              setProfileForm((prev) => ({ ...prev, [field]: e.target.value }))
-                            }
-                            className="w-full text-sm text-gray-900 border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-transparent"
-                          />
-                        ) : (
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {profileForm[field]}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {editingProfile && (
-                  <div className="flex gap-2 mt-5">
-                    <button
-                      onClick={handleProfileSave}
-                      className="flex items-center gap-1.5 bg-[#FF9900] hover:bg-[#e68900] text-[#131921] font-bold text-sm px-4 py-2 rounded-lg transition-colors duration-200"
-                    >
-                      <Check size={14} /> Save Changes
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingProfile(false);
-                        setProfileForm({
-                          name: MOCK_USER.name,
-                          email: MOCK_USER.email,
-                          phone: MOCK_USER.phone,
-                        });
-                      }}
-                      className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm px-4 py-2 rounded-lg transition-colors duration-200"
-                    >
-                      <X size={14} /> Cancel
-                    </button>
-                  </div>
-                )}
-                {saveSuccess && (
-                  <motion.p
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-3 text-xs text-green-600 font-medium flex items-center gap-1"
-                  >
-                    <Check size={12} /> Profile updated successfully.
-                  </motion.p>
-                )}
-              </motion.div>
-
-              {/* Address card */}
-              <motion.div
-                variants={fadeInUp}
-                className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-black/5 p-6"
-              >
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="font-bold text-gray-900 text-base">Default Address</h2>
-                  <button className="flex items-center gap-1.5 text-xs text-[#FF9900] font-semibold hover:underline">
-                    <Edit size={13} /> Edit
-                  </button>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                    <MapPin size={15} className="text-gray-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">{MOCK_USER.name}</p>
-                    <p className="text-sm text-gray-600 mt-1 leading-relaxed">
-                      {MOCK_USER.address.line1}
-                      {MOCK_USER.address.line2 ? `, ${MOCK_USER.address.line2}` : ""}
-                      <br />
-                      {MOCK_USER.address.city}, {MOCK_USER.address.state} {MOCK_USER.address.zip}
-                      <br />
-                      {MOCK_USER.address.country}
-                    </p>
-                    <span className="inline-block mt-2 text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">
-                      Default
-                    </span>
-                  </div>
-                </div>
-                <button className="mt-5 w-full text-sm text-[#FF9900] font-semibold border border-[#FF9900]/40 rounded-lg py-2 hover:bg-[#FF9900]/5 transition-colors duration-200">
-                  + Add New Address
-                </button>
-              </motion.div>
-            </div>
-
-            {/* Recent orders preview */}
-            <motion.div
-              variants={fadeInUp}
-              className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-black/5 p-6"
-            >
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="font-bold text-gray-900 text-base">Recent Orders</h2>
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar tabs */}
+          <aside className="lg:w-56 flex-shrink-0">
+            <nav className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              {tabs.map((tab, idx) => (
                 <button
-                  onClick={() => setActiveTab("orders")}
-                  className="flex items-center gap-1 text-xs text-[#FF9900] font-semibold hover:underline"
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all duration-150 ${
+                    idx !== 0 ? "border-t border-gray-100" : ""
+                  } ${
+                    activeTab === tab.id
+                      ? "bg-[#F0FDF4] text-[#10B981] border-l-4 border-l-[#10B981]"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-[#10B981]"
+                  }`}
                 >
-                  View all <ChevronRight size={13} />
+                  <span className={activeTab === tab.id ? "text-[#10B981]" : "text-gray-400"}>
+                    {tab.icon}
+                  </span>
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <ChevronRight className="w-3.5 h-3.5 ml-auto text-[#10B981]" />
+                  )}
                 </button>
-              </div>
-              <div className="space-y-3">
-                {MOCK_ORDERS.slice(0, 3).map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center gap-4 p-3 rounded-lg bg-gray-50 border border-gray-100"
+              ))}
+            </nav>
+
+            {/* Quick links */}
+            <div className="mt-4 bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Quick Links</p>
+              <div className="space-y-2">
+                {[
+                  { label: "Your Orders", href: "/orders" },
+                  { label: "Shopping Cart", href: "/cart" },
+                  { label: "Order History", href: "/order-history" },
+                  { label: "Help Center", href: "/help" },
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#10B981] transition-colors"
                   >
-                    <img
-                      src={order.image}
-                      alt={order.product}
-                      className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-200"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{order.product}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{order.id} · {order.date}</p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-bold text-gray-900">${(order.total ?? 0).toFixed(2)}</p>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[order.status] ?? "bg-gray-100 text-gray-600"}`}>
-                        {order.status}
-                      </span>
-                    </div>
-                  </div>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                    {link.label}
+                  </Link>
                 ))}
               </div>
-            </motion.div>
-          </motion.div>
-        )}
+            </div>
+          </aside>
 
-        {/* ORDERS TAB */}
-        {activeTab === "orders" && (
-          <motion.div
-            key="orders"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            className="space-y-4"
-          >
-            <motion.h2 variants={fadeInUp} className="text-xl font-bold text-gray-900">
-              Order History
-            </motion.h2>
-            {MOCK_ORDERS.map((order) => (
-              <motion.div
-                key={order.id}
-                variants={fadeInUp}
-                whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-black/5 overflow-hidden"
-              >
-                {/* Order header */}
-                <div className="bg-gray-50 border-b border-gray-100 px-5 py-3 flex flex-wrap gap-4 items-center justify-between">
-                  <div className="flex flex-wrap gap-6">
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wide">Order Placed</p>
-                      <p className="text-sm font-semibold text-gray-900">{order.date}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wide">Total</p>
-                      <p className="text-sm font-semibold text-gray-900">${(order.total ?? 0).toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wide">Items</p>
-                      <p className="text-sm font-semibold text-gray-900">{order.items}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide">Order ID</p>
-                    <p className="text-sm font-mono font-semibold text-gray-700">{order.id}</p>
-                  </div>
-                </div>
-
-                {/* Order body */}
-                <div className="px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <img
-                    src={order.image}
-                    alt={order.product}
-                    className="w-16 h-16 rounded-lg object-cover border border-gray-200 flex-shrink-0"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">{order.product}</p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COLORS[order.status] ?? "bg-gray-100 text-gray-600"}`}>
-                        {order.status}
-                      </span>
-                      {order.status === "In Transit" && (
-                        <span className="flex items-center gap-1 text-xs text-blue-600">
-                          <Truck size={12} /> Estimated delivery: Dec 22
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <button className="text-sm text-[#FF9900] font-semibold border border-[#FF9900]/40 rounded-lg px-4 py-1.5 hover:bg-[#FF9900]/5 transition-colors duration-200">
-                      Track
-                    </button>
-                    <button className="text-sm text-gray-600 font-semibold border border-gray-200 rounded-lg px-4 py-1.5 hover:bg-gray-50 transition-colors duration-200">
-                      Return
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-
-        {/* WISHLIST TAB */}
-        {activeTab === "wishlist" && (
-          <motion.div
-            key="wishlist"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            className="space-y-4"
-          >
-            <motion.h2 variants={fadeInUp} className="text-xl font-bold text-gray-900">
-              Saved Items
-            </motion.h2>
-            <motion.div
-              variants={staggerContainer}
-              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"
-            >
-              {MOCK_WISHLIST.map((item) => (
-                <motion.div
-                  key={item.id}
-                  variants={scaleIn}
-                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                  className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-black/5 overflow-hidden group"
-                >
-                  <div className="relative overflow-hidden bg-gray-50 h-44">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src =
-                          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='176' viewBox='0 0 200 176'%3E%3Crect width='200' height='176' fill='%23F3F4F6'/%3E%3C/svg%3E";
-                      }}
-                    />
-                    <button className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center hover:bg-rose-50 transition-colors duration-200">
-                      <Heart size={15} className="fill-rose-500 text-rose-500" />
-                    </button>
-                  </div>
-                  <div className="p-4">
-                    <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2">{item.name}</p>
-                    <div className="flex items-center gap-1.5 mt-1.5">
-                      <StarRating rating={item.rating} />
-                      <span className="text-xs text-gray-400">({(item.reviews ?? 0).toLocaleString("en-US")})</span>
-                    </div>
-                    <p className="text-lg font-bold text-gray-900 mt-2">${(item.price ?? 0).toFixed(2)}</p>
-                    <button className="mt-3 w-full bg-[#FF9900] hover:bg-[#e68900] text-[#131921] font-bold text-sm py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
-                      <ShoppingCart size={15} /> Add to Cart
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* PAYMENTS TAB */}
-        {activeTab === "payments" && (
-          <motion.div
-            key="payments"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            className="space-y-6"
-          >
-            <motion.h2 variants={fadeInUp} className="text-xl font-bold text-gray-900">
-              Payment Methods
-            </motion.h2>
-
-            <motion.div variants={staggerContainer} className="grid sm:grid-cols-2 gap-4">
-              {MOCK_PAYMENT_METHODS.map((pm) => (
-                <motion.div
-                  key={pm.id}
-                  variants={fadeInUp}
-                  className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-black/5 p-5"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-8 bg-gradient-to-br from-gray-700 to-gray-900 rounded-md flex items-center justify-center">
-                        <CreditCard size={16} className="text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-gray-900">{pm.type} ending in {pm.last4}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">Expires {pm.expiry}</p>
-                      </div>
-                    </div>
-                    {pm.isDefault && (
-                      <span className="text-xs bg-[#FF9900]/10 text-[#FF9900] font-bold px-2 py-0.5 rounded-full">
-                        Default
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <button className="text-xs text-[#FF9900] font-semibold hover:underline">Edit</button>
-                    <span className="text-gray-300">|</span>
-                    <button className="text-xs text-gray-500 font-semibold hover:underline">Remove</button>
-                    {!pm.isDefault && (
-                      <>
-                        <span className="text-gray-300">|</span>
-                        <button className="text-xs text-gray-500 font-semibold hover:underline">Set as Default</button>
-                      </>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            <motion.div
-              variants={fadeInUp}
-              className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-black/5 p-5"
-            >
-              <button className="w-full flex items-center justify-center gap-2 text-sm text-[#FF9900] font-bold border-2 border-dashed border-[#FF9900]/40 rounded-xl py-4 hover:bg-[#FF9900]/5 transition-colors duration-200">
-                <CreditCard size={16} /> Add New Payment Method
-              </button>
-            </motion.div>
-
-            {/* Reward points */}
-            <motion.div
-              variants={fadeInUp}
-              className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-black/5 p-6"
-            >
-              <h3 className="font-bold text-gray-900 mb-4">ShopNow Reward Points</h3>
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
-                  <Gift size={24} className="text-amber-500" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-3xl font-extrabold text-gray-900">
-                    {MOCK_USER.points.toLocaleString("en-US")}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-0.5">Available points</p>
-                  <div className="mt-2 h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-amber-400 to-[#FF9900] rounded-full"
-                      style={{ width: `${Math.min((MOCK_USER.points / 10000) * 100, 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {(10000 - MOCK_USER.points).toLocaleString("en-US")} points to Gold status
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* SETTINGS TAB */}
-        {activeTab === "settings" && (
-          <motion.div
-            key="settings"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            className="space-y-6"
-          >
-            <motion.h2 variants={fadeInUp} className="text-xl font-bold text-gray-900">
-              Account Settings
-            </motion.h2>
-
-            {/* Notification preferences */}
-            <motion.div
-              variants={fadeInUp}
-              className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-black/5 p-6"
-            >
-              <div className="flex items-center gap-2 mb-5">
-                <Bell size={18} className="text-[#FF9900]" />
-                <h3 className="font-bold text-gray-900">Notification Preferences</h3>
-              </div>
-              <div className="space-y-4">
-                {notifications.map((notif) => (
-                  <div key={notif.id} className="flex items-center justify-between">
-                    <p className="text-sm text-gray-700">{notif.label}</p>
-                    <button
-                      onClick={() => toggleNotification(notif.id)}
-                      className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9900] ${
-                        notif.enabled ? "bg-[#FF9900]" : "bg-gray-200"
-                      }`}
-                      aria-pressed={notif.enabled}
-                      aria-label={`Toggle ${notif.label}`}
-                    >
-                      <span
-                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                          notif.enabled ? "translate-x-5" : "translate-x-0"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Security */}
-            <motion.div
-              variants={fadeInUp}
-              className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-black/5 p-6"
-            >
-              <div className="flex items-center gap-2 mb-5">
-                <Lock size={18} className="text-[#FF9900]" />
-                <h3 className="font-bold text-gray-900">Security</h3>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Current Password</label>
-                  <input
-                    type="password"
-                    value=""
-                    onChange={() => {}}
-                    placeholder="Enter current password"
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">New Password</label>
-                  <input
-                    type="password"
-                    value=""
-                    onChange={() => {}}
-                    placeholder="Enter new password"
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1.5">Confirm New Password</label>
-                  <input
-                    type="password"
-                    value=""
-                    onChange={() => {}}
-                    placeholder="Confirm new password"
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-transparent"
-                  />
-                </div>
-                <button className="bg-[#FF9900] hover:bg-[#e68900] text-[#131921] font-bold text-sm px-5 py-2 rounded-lg transition-colors duration-200">
-                  Update Password
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Danger zone */}
-            <motion.div
-              variants={fadeInUp}
-              className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_-4px_rgba(0,0,0,0.1)] border border-red-100 p-6"
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <AlertCircle size={18} className="text-red-500" />
-                <h3 className="font-bold text-red-600">Danger Zone</h3>
-              </div>
-              <p className="text-sm text-gray-500 mb-4">
-                Permanently delete your account and all associated data. This action cannot be undone.
-              </p>
-              <button className="text-sm text-red-600 font-semibold border border-red-200 rounded-lg px-4 py-2 hover:bg-red-50 transition-colors duration-200">
-                Delete Account
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
+          {/* Main panel */}
+          <main className="flex-1 bg-white rounded-xl border border-gray-200 p-6 shadow-sm min-h-[500px]">
+            {activeTab === "profile" && <ProfileTab />}
+            {activeTab === "address" && <AddressTab />}
+            {activeTab === "security" && <SecurityTab />}
+            {activeTab === "notifications" && <NotificationsTab />}
+            {activeTab === "payment" && <PaymentTab />}
+          </main>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

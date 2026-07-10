@@ -56,12 +56,12 @@ function StarRating({ rate, count }: { rate: number; count: number }) {
         {Array.from({ length: 5 }).map((_, i) => (
           <svg key={i} className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="none">
             {i < full ? (
-              <polygon points="10,1 12.9,7 19.5,7.6 14.5,12 16.2,18.5 10,15 3.8,18.5 5.5,12 0.5,7.6 7.1,7" fill="#FF9900" />
+              <polygon points="10,1 12.9,7 19.5,7.6 14.5,12 16.2,18.5 10,15 3.8,18.5 5.5,12 0.5,7.6 7.1,7" fill="#10B981" />
             ) : i === full && half ? (
               <>
                 <defs>
                   <linearGradient id={`half-${i}`}>
-                    <stop offset="50%" stopColor="#FF9900" />
+                    <stop offset="50%" stopColor="#10B981" />
                     <stop offset="50%" stopColor="#D1D5DB" />
                   </linearGradient>
                 </defs>
@@ -73,7 +73,7 @@ function StarRating({ rate, count }: { rate: number; count: number }) {
           </svg>
         ))}
       </div>
-      <span className="text-xs text-[#007185] hover:text-[#C7511F] cursor-pointer">
+      <span className="text-xs text-[#0891B2] hover:text-[#059669] cursor-pointer">
         {count.toLocaleString("en-US")}
       </span>
     </div>
@@ -110,35 +110,28 @@ export default function CartPage() {
     try {
       localStorage.setItem("shopnow-cart", JSON.stringify(updated));
       window.dispatchEvent(new Event("cart-updated"));
-    } catch {}
+    } catch {
+      // ignore
+    }
   };
 
   const updateQuantity = (id: number, delta: number) => {
     const updated = items
       .map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, (item.quantity ?? 1) + delta) } : item
+        item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
       )
-      .filter((item) => (item.quantity ?? 1) >= 1);
-    syncCart(updated);
-  };
-
-  const setQuantity = (id: number, val: number) => {
-    if (isNaN(val) || val < 1) return;
-    const updated = items.map((item) =>
-      item.id === id ? { ...item, quantity: val } : item
-    );
+      .filter((item) => item.quantity > 0);
     syncCart(updated);
   };
 
   const removeItem = (id: number) => {
-    const updated = items.filter((item) => item.id !== id);
-    syncCart(updated);
+    syncCart(items.filter((item) => item.id !== id));
   };
 
   const saveForLater = (id: number) => {
     const item = items.find((i) => i.id === id);
     if (item) {
-      setSavedItems((prev) => [...prev, { ...item, quantity: 1 }]);
+      setSavedItems((prev) => [...prev, item]);
       removeItem(id);
     }
   };
@@ -146,14 +139,9 @@ export default function CartPage() {
   const moveToCart = (id: number) => {
     const item = savedItems.find((i) => i.id === id);
     if (item) {
-      const updated = [...items, { ...item, quantity: 1 }];
-      syncCart(updated);
+      syncCart([...items, item]);
       setSavedItems((prev) => prev.filter((i) => i.id !== id));
     }
-  };
-
-  const removeSaved = (id: number) => {
-    setSavedItems((prev) => prev.filter((i) => i.id !== id));
   };
 
   const applyPromo = () => {
@@ -166,396 +154,318 @@ export default function CartPage() {
     }
   };
 
-  const subtotal = items.reduce((sum, item) => sum + (item.price ?? 0) * (item.quantity ?? 1), 0);
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discount = promoApplied ? subtotal * 0.1 : 0;
-  const estimatedTax = (subtotal - discount) * 0.08;
-  const total = subtotal - discount + estimatedTax;
-  const itemCount = items.reduce((sum, item) => sum + (item.quantity ?? 1), 0);
+  const shipping = subtotal >= 35 ? 0 : 5.99;
+  const tax = (subtotal - discount) * 0.08;
+  const total = subtotal - discount + shipping + tax;
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-[#EAEDED] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#FF9900] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#F0F9FF] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#10B981] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#EAEDED]">
-      <div className="max-w-[1500px] mx-auto px-3 sm:px-4 py-6">
-        <div className="flex flex-col lg:flex-row gap-4 items-start">
-          {/* LEFT COLUMN */}
-          <div className="flex-1 min-w-0">
-            {/* Cart Header */}
-            <motion.div
-              variants={fadeInUp}
-              initial="hidden"
-              animate="visible"
-              className="bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-6 py-5 mb-4"
+    <div className="min-h-screen bg-[#F0F9FF]">
+      {/* Page header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-[1200px] mx-auto px-4 py-4">
+          <h1 className="text-2xl font-bold text-[#0F2027]">
+            Shopping Cart
+          </h1>
+        </div>
+      </div>
+
+      <div className="max-w-[1200px] mx-auto px-4 py-6">
+        {items.length === 0 ? (
+          /* ── Empty state ── */
+          <motion.div
+            variants={scaleIn}
+            initial="hidden"
+            animate="visible"
+            className="bg-white rounded-xl shadow-sm p-12 text-center"
+          >
+            <ShoppingCart className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-[#0F2027] mb-2">Your cart is empty</h2>
+            <p className="text-gray-500 mb-6">
+              Looks like you haven&apos;t added anything yet. Start shopping!
+            </p>
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#059669] text-white font-semibold px-8 py-3 rounded-lg transition-colors duration-200"
             >
-              <div className="flex items-end justify-between flex-wrap gap-2">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-normal text-[#0F1111] tracking-tight">
-                    Shopping Cart
-                  </h1>
-                  {items.length > 0 && (
-                    <p className="text-sm text-[#565959] mt-0.5">
-                      {itemCount} {itemCount === 1 ? "item" : "items"}
-                    </p>
+              Continue Shopping
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
+        ) : (
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* ── Left column: cart items ── */}
+            <div className="flex-1 min-w-0">
+              {/* Delivery banner */}
+              <div className="bg-white rounded-xl shadow-sm px-5 py-3 mb-4 flex items-center gap-2">
+                <Truck className="w-5 h-5 text-[#10B981] flex-shrink-0" />
+                <p className="text-sm text-[#0F2027]">
+                  {subtotal >= 35 ? (
+                    <span className="font-semibold text-[#10B981]">Your order qualifies for FREE delivery!</span>
+                  ) : (
+                    <>
+                      Add{" "}
+                      <span className="font-semibold text-[#10B981]">
+                        ${(35 - subtotal).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      </span>{" "}
+                      more to get FREE delivery
+                    </>
                   )}
-                </div>
-                <span className="text-sm text-[#565959] hidden sm:block">Price</span>
+                </p>
               </div>
-            </motion.div>
 
-            {/* Empty State */}
-            {items.length === 0 && (
-              <motion.div
-                variants={scaleIn}
-                initial="hidden"
-                animate="visible"
-                className="bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-6 py-16 text-center"
-              >
-                <ShoppingCart className="w-16 h-16 text-[#D1D5DB] mx-auto mb-4" />
-                <h2 className="text-xl font-medium text-[#0F1111] mb-2">Your cart is empty</h2>
-                <p className="text-[#565959] mb-6 text-sm">
-                  Looks like you have not added anything to your cart yet.
-                </p>
-                <Link
-                  href="/products"
-                  className="inline-flex items-center gap-2 bg-[#FF9900] hover:bg-[#e88a00] text-[#0F1111] font-semibold px-6 py-2.5 rounded-full text-sm transition-all duration-200 shadow-sm"
-                >
-                  Continue Shopping
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              </motion.div>
-            )}
+              {/* Cart items */}
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                  <h2 className="font-semibold text-[#0F2027]">
+                    {itemCount} {itemCount === 1 ? "item" : "items"} in cart
+                  </h2>
+                  <span className="text-sm text-gray-500">Price</span>
+                </div>
 
-            {/* Cart Items */}
-            <AnimatePresence initial={false}>
-              {items.map((item) => (
-                <motion.div
-                  key={item.id}
-                  variants={slideOutLeft}
-                  initial="visible"
-                  animate="visible"
-                  exit="exit"
-                  layout
-                  className="bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-4 sm:px-6 mb-3 overflow-hidden"
-                >
-                  <div className="py-4 flex gap-4">
-                    {/* Image */}
-                    <Link href={`/products/${item.id}`} className="flex-shrink-0">
-                      <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-lg overflow-hidden bg-[#F7F8F8] border border-black/5 flex items-center justify-center">
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="w-full h-full object-contain p-2 hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/images/product-placeholder.jpg";
-                          }}
-                        />
-                      </div>
-                    </Link>
-
-                    {/* Details */}
-                    <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-2">
-                      <div className="flex-1 min-w-0">
-                        <Link href={`/products/${item.id}`}>
-                          <h3 className="text-sm sm:text-base font-medium text-[#0F1111] hover:text-[#C7511F] line-clamp-2 leading-snug mb-1 transition-colors duration-150">
-                            {item.title}
-                          </h3>
-                        </Link>
-
-                        <div className="mb-1.5">
-                          <StarRating rate={item.rating?.rate ?? 0} count={item.rating?.count ?? 0} />
-                        </div>
-
-                        <p className="text-xs text-[#007600] font-medium mb-1">In Stock</p>
-                        <p className="text-xs text-[#565959] mb-2 line-clamp-1">{item.description}</p>
-
-                        {/* Quantity + Actions */}
-                        <div className="flex flex-wrap items-center gap-2 mt-2">
-                          {/* Quantity Stepper */}
-                          <div className="flex items-center border border-[#D5D9D9] rounded-full overflow-hidden bg-[#F0F2F2] shadow-sm">
-                            <button
-                              onClick={() => updateQuantity(item.id, -1)}
-                              className="w-8 h-8 flex items-center justify-center text-[#0F1111] hover:bg-[#E3E6E6] transition-colors duration-150 text-lg font-light"
-                              aria-label="Decrease quantity"
-                            >
-                              −
-                            </button>
-                            <input
-                              type="number"
-                              min={1}
-                              max={99}
-                              value={item.quantity ?? 1}
-                              onChange={(e) => setQuantity(item.id, parseInt(e.target.value, 10))}
-                              className="w-10 text-center text-sm font-semibold bg-white border-x border-[#D5D9D9] h-8 focus:outline-none text-[#0F1111]"
-                              aria-label="Quantity"
-                            />
-                            <button
-                              onClick={() => updateQuantity(item.id, 1)}
-                              className="w-8 h-8 flex items-center justify-center text-[#0F1111] hover:bg-[#E3E6E6] transition-colors duration-150 text-lg font-light"
-                              aria-label="Increase quantity"
-                            >
-                              +
-                            </button>
-                          </div>
-
-                          <span className="text-[#D5D9D9] text-sm select-none">|</span>
-
-                          <button
-                            onClick={() => removeItem(item.id)}
-                            className="flex items-center gap-1 text-xs text-[#007185] hover:text-[#C7511F] hover:underline transition-colors duration-150"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            Delete
-                          </button>
-
-                          <span className="text-[#D5D9D9] text-sm select-none">|</span>
-
-                          <button
-                            onClick={() => saveForLater(item.id)}
-                            className="flex items-center gap-1 text-xs text-[#007185] hover:text-[#C7511F] hover:underline transition-colors duration-150"
-                          >
-                            <Heart className="w-3.5 h-3.5" />
-                            Save for later
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Price */}
-                      <div className="sm:text-right flex-shrink-0">
-                        <p className="text-base sm:text-lg font-bold text-[#0F1111]">
-                          ${((item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}
-                        </p>
-                        {(item.quantity ?? 1) > 1 && (
-                          <p className="text-xs text-[#565959]">
-                            ${(item.price ?? 0).toFixed(2)} each
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {/* Subtotal below items */}
-            {items.length > 0 && (
-              <motion.div
-                variants={fadeInUp}
-                initial="hidden"
-                animate="visible"
-                className="bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-6 py-4 mb-4 text-right"
-              >
-                <p className="text-base sm:text-lg text-[#0F1111]">
-                  Subtotal ({itemCount} {itemCount === 1 ? "item" : "items"}):{" "}
-                  <span className="font-bold">${subtotal.toFixed(2)}</span>
-                </p>
-              </motion.div>
-            )}
-
-            {/* Saved for Later */}
-            {savedItems.length > 0 && (
-              <motion.div
-                variants={fadeInUp}
-                initial="hidden"
-                animate="visible"
-                className="mt-6"
-              >
-                <h2 className="text-xl font-normal text-[#0F1111] mb-3 px-1">
-                  Saved for later ({savedItems.length})
-                </h2>
-                <AnimatePresence>
-                  {savedItems.map((item) => (
+                <AnimatePresence initial={false}>
+                  {items.map((item) => (
                     <motion.div
-                      key={`saved-${item.id}`}
+                      key={item.id}
                       variants={slideOutLeft}
-                      initial="visible"
+                      initial="hidden"
                       animate="visible"
                       exit="exit"
-                      layout
-                      className="bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-4 sm:px-6 mb-3 overflow-hidden"
+                      className="px-5 border-b border-gray-100 last:border-b-0"
                     >
-                      <div className="py-4 flex gap-4">
-                        <div className="w-24 h-24 rounded-lg overflow-hidden bg-[#F7F8F8] border border-black/5 flex items-center justify-center flex-shrink-0">
+                      <div className="flex gap-4 py-4">
+                        {/* Product image */}
+                        <div className="w-28 h-28 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
                           <img
                             src={item.image}
                             alt={item.title}
                             className="w-full h-full object-contain p-2"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/images/product-placeholder.jpg";
+                              (e.currentTarget as HTMLImageElement).src =
+                                "https://placehold.co/112x112/e5e7eb/9ca3af?text=No+Image";
                             }}
                           />
                         </div>
+
+                        {/* Product info */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-medium text-[#0F1111] line-clamp-2 mb-1">{item.title}</h3>
-                          <p className="text-base font-bold text-[#0F1111] mb-2">${(item.price ?? 0).toFixed(2)}</p>
-                          <div className="flex gap-3">
+                          <Link
+                            href={`/product-detail?id=${item.id}`}
+                            className="text-sm font-medium text-[#0F2027] hover:text-[#10B981] line-clamp-2 leading-snug mb-1 block"
+                          >
+                            {item.title}
+                          </Link>
+
+                          <StarRating rate={item.rating.rate} count={item.rating.count} />
+
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span className="text-xs bg-[#3B82F6] text-white font-semibold px-1.5 py-0.5 rounded">
+                              Prime
+                            </span>
+                            <span className="text-xs text-[#10B981] font-medium">FREE delivery</span>
+                          </div>
+
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-1">{item.description}</p>
+
+                          {/* Actions */}
+                          <div className="flex items-center gap-3 mt-3 flex-wrap">
+                            {/* Quantity controls */}
+                            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                              <button
+                                onClick={() => updateQuantity(item.id, -1)}
+                                className="w-8 h-8 flex items-center justify-center text-[#0F2027] hover:bg-gray-100 transition-colors text-lg font-medium"
+                                aria-label="Decrease quantity"
+                              >
+                                −
+                              </button>
+                              <span className="w-10 text-center text-sm font-semibold text-[#0F2027] border-x border-gray-300">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => updateQuantity(item.id, 1)}
+                                className="w-8 h-8 flex items-center justify-center text-[#0F2027] hover:bg-gray-100 transition-colors text-lg font-medium"
+                                aria-label="Increase quantity"
+                              >
+                                +
+                              </button>
+                            </div>
+
+                            <span className="text-gray-300">|</span>
+
                             <button
-                              onClick={() => moveToCart(item.id)}
-                              className="text-xs bg-[#FF9900] hover:bg-[#e88a00] text-[#0F1111] font-semibold px-3 py-1.5 rounded-full transition-colors duration-200"
+                              onClick={() => removeItem(item.id)}
+                              className="flex items-center gap-1 text-sm text-[#0891B2] hover:text-[#059669] transition-colors"
                             >
-                              Move to cart
-                            </button>
-                            <button
-                              onClick={() => removeSaved(item.id)}
-                              className="text-xs text-[#007185] hover:text-[#C7511F] hover:underline transition-colors duration-150"
-                            >
+                              <Trash2 className="w-3.5 h-3.5" />
                               Delete
                             </button>
+
+                            <span className="text-gray-300">|</span>
+
+                            <button
+                              onClick={() => saveForLater(item.id)}
+                              className="flex items-center gap-1 text-sm text-[#0891B2] hover:text-[#059669] transition-colors"
+                            >
+                              <Heart className="w-3.5 h-3.5" />
+                              Save for later
+                            </button>
                           </div>
+                        </div>
+
+                        {/* Price */}
+                        <div className="flex-shrink-0 text-right">
+                          <p className="font-bold text-[#0F2027] text-lg">
+                            ${(item.price * item.quantity).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                          </p>
+                          {item.quantity > 1 && (
+                            <p className="text-xs text-gray-500">
+                              ${item.price.toLocaleString("en-US", { minimumFractionDigits: 2 })} each
+                            </p>
+                          )}
                         </div>
                       </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
-              </motion.div>
-            )}
 
-            {/* Trust Badges */}
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-60px" }}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6"
-            >
-              {[
-                { icon: Shield, title: "Secure Checkout", desc: "256-bit SSL encryption on every order" },
-                { icon: Truck, title: "Free Delivery", desc: "On orders over $35 with Prime" },
-                { icon: RotateCcw, title: "Easy Returns", desc: "30-day hassle-free return policy" },
-              ].map(({ icon: Icon, title, desc }) => (
-                <motion.div
-                  key={title}
-                  variants={fadeInUp}
-                  className="bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-4 flex items-start gap-3"
-                >
-                  <div className="w-9 h-9 rounded-full bg-[#FFF3CD] flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4.5 h-4.5 text-[#FF9900]" style={{ width: 18, height: 18 }} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#0F1111]">{title}</p>
-                    <p className="text-xs text-[#565959] mt-0.5">{desc}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
+                {/* Subtotal row */}
+                <div className="px-5 py-4 bg-gray-50 text-right">
+                  <p className="text-base text-[#0F2027]">
+                    Subtotal ({itemCount} {itemCount === 1 ? "item" : "items"}):{" "}
+                    <span className="font-bold text-lg">
+                      ${subtotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    </span>
+                  </p>
+                </div>
+              </div>
 
-          {/* RIGHT COLUMN — Order Summary */}
-          <motion.div
-            variants={scaleIn}
-            initial="hidden"
-            animate="visible"
-            className="w-full lg:w-80 xl:w-96 flex-shrink-0"
-          >
-            <div className="sticky top-20">
-              <div className="bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5">
-                {/* Free delivery badge */}
-                {items.length > 0 && (
-                  <div className="flex items-start gap-2 mb-4 p-3 bg-[#F0FFF4] border border-[#C6F6D5] rounded-lg">
-                    <Truck className="w-4 h-4 text-[#007600] mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-[#007600] font-medium leading-snug">
-                      Your order qualifies for FREE delivery. Choose this option at checkout.
+              {/* Promo code */}
+              <div className="bg-white rounded-xl shadow-sm px-5 py-4 mt-4">
+                <h3 className="font-semibold text-[#0F2027] mb-3 flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-[#10B981]" />
+                  Promo Code
+                </h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    placeholder="Enter promo code (try SAVE10)"
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
+                  />
+                  <button
+                    onClick={applyPromo}
+                    className="bg-[#1A3A4A] hover:bg-[#0F2027] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Apply
+                  </button>
+                </div>
+                {promoApplied && (
+                  <p className="text-[#10B981] text-sm mt-2 font-medium">✓ Promo code applied! 10% off.</p>
+                )}
+                {promoError && (
+                  <p className="text-red-500 text-sm mt-2">{promoError}</p>
+                )}
+              </div>
+
+              {/* Trust badges */}
+              <div className="grid grid-cols-3 gap-3 mt-4">
+                {[
+                  { icon: Shield, label: "Secure Checkout", sub: "256-bit SSL" },
+                  { icon: Truck, label: "Free Shipping", sub: "Orders over $35" },
+                  { icon: RotateCcw, label: "Easy Returns", sub: "30-day policy" },
+                ].map(({ icon: Icon, label, sub }) => (
+                  <div key={label} className="bg-white rounded-xl shadow-sm p-3 flex flex-col items-center text-center gap-1">
+                    <Icon className="w-5 h-5 text-[#10B981]" />
+                    <p className="text-xs font-semibold text-[#0F2027]">{label}</p>
+                    <p className="text-xs text-gray-500">{sub}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Right column: order summary ── */}
+            <div className="lg:w-80 flex-shrink-0">
+              <div className="bg-white rounded-xl shadow-sm p-5 sticky top-20">
+                <h2 className="font-bold text-[#0F2027] text-lg mb-4">Order Summary</h2>
+
+                <div className="space-y-2.5 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subtotal ({itemCount} items)</span>
+                    <span className="font-medium text-[#0F2027]">
+                      ${subtotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+
+                  {promoApplied && (
+                    <div className="flex justify-between">
+                      <span className="text-[#10B981]">Promo discount (10%)</span>
+                      <span className="text-[#10B981] font-medium">
+                        −${discount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Shipping</span>
+                    <span className={shipping === 0 ? "text-[#10B981] font-medium" : "font-medium text-[#0F2027]"}>
+                      {shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Estimated tax</span>
+                    <span className="font-medium text-[#0F2027]">
+                      ${tax.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-2.5 flex justify-between">
+                    <span className="font-bold text-[#0F2027] text-base">Order Total</span>
+                    <span className="font-bold text-[#0F2027] text-base">
+                      ${total.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+
+                {promoApplied && (
+                  <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                    <p className="text-xs text-[#10B981] font-medium">
+                      🎉 You&apos;re saving ${discount.toLocaleString("en-US", { minimumFractionDigits: 2 })} on this order!
                     </p>
                   </div>
                 )}
 
-                <h2 className="text-lg font-medium text-[#0F1111] mb-4">
-                  Order Summary
-                </h2>
+                <Link
+                  href="/checkout"
+                  className="mt-5 w-full flex items-center justify-center gap-2 bg-[#10B981] hover:bg-[#059669] text-white font-semibold py-3 rounded-lg transition-colors duration-200 text-sm"
+                >
+                  Proceed to Checkout
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
 
-                <div className="space-y-2 text-sm mb-4">
-                  <div className="flex justify-between text-[#0F1111]">
-                    <span>Items ({itemCount}):</span>
-                    <span>${subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-[#0F1111]">
-                    <span>Shipping &amp; handling:</span>
-                    <span className="text-[#007600] font-medium">FREE</span>
-                  </div>
-                  {promoApplied && (
-                    <div className="flex justify-between text-[#007600]">
-                      <span>Promo (SAVE10):</span>
-                      <span>-${discount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-[#0F1111]">
-                    <span>Estimated tax (8%):</span>
-                    <span>${estimatedTax.toFixed(2)}</span>
-                  </div>
-                </div>
+                <p className="text-xs text-gray-400 text-center mt-3">
+                  Secure checkout powered by ShopNow
+                </p>
 
-                <div className="border-t border-[#DDD] pt-3 mb-4">
-                  <div className="flex justify-between text-lg font-bold text-[#B12704]">
-                    <span>Order total:</span>
-                    <span>${total.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                {/* Promo Code */}
-                <div className="mb-4">
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Tag className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#565959]" />
-                      <input
-                        type="text"
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
-                        placeholder="Promo code"
-                        className="w-full pl-8 pr-3 py-2 text-sm border border-[#D5D9D9] rounded-lg focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-all duration-200 text-[#0F1111] placeholder:text-[#999]"
-                      />
-                    </div>
-                    <button
-                      onClick={applyPromo}
-                      className="px-3 py-2 text-sm bg-[#F0F2F2] hover:bg-[#E3E6E6] border border-[#D5D9D9] rounded-lg font-medium text-[#0F1111] transition-colors duration-200 whitespace-nowrap"
-                    >
-                      Apply
-                    </button>
-                  </div>
-                  {promoError && (
-                    <p className="text-xs text-[#B12704] mt-1">{promoError}</p>
-                  )}
-                  {promoApplied && (
-                    <p className="text-xs text-[#007600] mt-1 font-medium">Promo code applied! 10% off.</p>
-                  )}
-                </div>
-
-                {/* CTA */}
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link
-                    href={items.length > 0 ? "/checkout" : "#"}
-                    className={`block w-full text-center py-3 rounded-full font-semibold text-sm transition-all duration-200 shadow-sm ${
-                      items.length > 0
-                        ? "bg-[#FF9900] hover:bg-[#e88a00] text-[#0F1111] cursor-pointer"
-                        : "bg-[#F0F2F2] text-[#999] cursor-not-allowed pointer-events-none"
-                    }`}
-                  >
-                    Proceed to Checkout
-                  </Link>
-                </motion.div>
-
-                {items.length > 0 && (
-                  <p className="text-xs text-[#565959] text-center mt-2">
-                    By placing your order, you agree to our{" "}
-                    <Link href="/conditions" className="text-[#007185] hover:underline">
-                      conditions of use
-                    </Link>
-                    .
-                  </p>
-                )}
-
-                {/* Payment icons */}
-                <div className="mt-4 pt-4 border-t border-[#EEE]">
-                  <p className="text-xs text-[#565959] text-center mb-2">Secure payment methods</p>
+                {/* Accepted payments */}
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-xs text-gray-500 text-center mb-2">We accept</p>
                   <div className="flex justify-center gap-2 flex-wrap">
                     {["Visa", "MC", "Amex", "PayPal", "Apple Pay"].map((method) => (
                       <span
                         key={method}
-                        className="text-[10px] font-semibold text-[#565959] bg-[#F7F8F8] border border-[#D5D9D9] rounded px-1.5 py-0.5"
+                        className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-medium"
                       >
                         {method}
                       </span>
@@ -563,19 +473,63 @@ export default function CartPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
 
-              {/* Continue Shopping */}
-              <div className="mt-3 text-center">
-                <Link
-                  href="/products"
-                  className="inline-flex items-center gap-1 text-sm text-[#007185] hover:text-[#C7511F] hover:underline transition-colors duration-150"
-                >
-                  <ChevronRight className="w-3.5 h-3.5 rotate-180" />
-                  Continue shopping
-                </Link>
-              </div>
+        {/* Saved for later */}
+        {savedItems.length > 0 && (
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+            className="mt-8"
+          >
+            <h2 className="text-xl font-bold text-[#0F2027] mb-4">
+              Saved for Later ({savedItems.length})
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {savedItems.map((item) => (
+                <div key={item.id} className="bg-white rounded-xl shadow-sm p-4">
+                  <div className="flex gap-3">
+                    <div className="w-20 h-20 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-contain p-1"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src =
+                            "https://placehold.co/80x80/e5e7eb/9ca3af?text=No+Image";
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[#0F2027] line-clamp-2 mb-1">{item.title}</p>
+                      <p className="text-sm font-bold text-[#0F2027]">
+                        ${item.price.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      </p>
+                      <button
+                        onClick={() => moveToCart(item.id)}
+                        className="mt-2 text-xs bg-[#10B981] hover:bg-[#059669] text-white font-medium px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Move to Cart
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </motion.div>
+        )}
+
+        {/* Continue shopping */}
+        <div className="mt-8 text-center">
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-2 text-[#0891B2] hover:text-[#059669] font-medium text-sm transition-colors"
+          >
+            ← Continue Shopping
+          </Link>
         </div>
       </div>
     </div>

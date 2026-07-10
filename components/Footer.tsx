@@ -30,11 +30,11 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-[#131921] text-white mt-auto">
+    <footer className="bg-[#0F2027] text-white mt-auto">
       {/* Back to top */}
       <button
         onClick={scrollToTop}
-        className="w-full bg-[#37475A] hover:bg-[#485769] text-white text-sm py-3 text-center transition-colors duration-200 font-medium"
+        className="w-full bg-[#1A3A4A] hover:bg-[#2D5A6E] text-white text-sm py-3 text-center transition-colors duration-200 font-medium"
         aria-label="Back to top"
       >
         {t("footer.backToTop")}
@@ -83,8 +83,8 @@ export default function Footer() {
       <div className="max-w-[1500px] mx-auto px-4 py-6 flex flex-col items-center gap-4">
         <Link href="/" className="flex items-center gap-1" aria-label={APP_NAME}>
           <span className="text-white font-extrabold text-lg tracking-tight">shop</span>
-          <span className="text-[#FF9900] font-extrabold text-lg tracking-tight">now</span>
-          <span className="text-[#FF9900] text-xs font-bold">.com</span>
+          <span className="text-[#10B981] font-extrabold text-lg tracking-tight">now</span>
+          <span className="text-[#10B981] text-xs font-bold">.com</span>
         </Link>
 
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">

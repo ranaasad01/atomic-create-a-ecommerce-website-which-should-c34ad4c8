@@ -104,112 +104,138 @@ export default function Navbar() {
         }`}
       >
         {/* Main nav */}
-        <div className="bg-[#131921]">
+        <div className="bg-[#0F2027]">
           <div className="max-w-[1500px] mx-auto px-3 sm:px-4 flex items-center gap-2 h-14">
             {/* Logo */}
             <Link
               href="/"
-              className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded border border-transparent hover:border-[#FF9900] transition-colors duration-200 focus-visible:outline-none focus-visible:border-[#FF9900]"
+              className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded border border-transparent hover:border-[#10B981] transition-colors duration-200 focus-visible:outline-none focus-visible:border-[#10B981]"
               aria-label={APP_NAME}
             >
               <span className="text-white font-extrabold text-xl tracking-tight leading-none">
                 shop
               </span>
-              <span className="text-[#FF9900] font-extrabold text-xl tracking-tight leading-none">
+              <span className="text-[#10B981] font-extrabold text-xl tracking-tight leading-none">
                 now
               </span>
-              <span className="text-[#FF9900] text-xs font-bold leading-none mt-auto mb-0.5">.com</span>
+              <span className="text-[#10B981] text-xs font-bold leading-none">.com</span>
             </Link>
 
             {/* Deliver to */}
-            <button className="hidden lg:flex items-start gap-1 px-2 py-1 rounded border border-transparent hover:border-white transition-colors duration-200 text-white min-w-0 flex-shrink-0">
-              <MapPin className="w-4 h-4 mt-1 text-white/70 flex-shrink-0" />
-              <div className="text-left">
-                <div className="text-[10px] text-white/70 leading-tight">{t("nav.deliverTo")}</div>
-                <div className="text-xs font-bold leading-tight">{t("nav.location")}</div>
-              </div>
+            <button className="hidden lg:flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 transition-colors duration-200 flex-shrink-0">
+              <span className="text-gray-400 text-[10px] leading-none">Deliver to</span>
+              <span className="text-white text-xs font-bold flex items-center gap-0.5 leading-none mt-0.5">
+                <MapPin className="w-3 h-3" />
+                United States
+              </span>
             </button>
 
             {/* Search bar */}
             <form
               onSubmit={handleSearch}
-              className="flex-1 flex items-center min-w-0"
+              className={`flex-1 flex items-center rounded-md overflow-hidden transition-all duration-200 ${
+                searchFocused ? "ring-2 ring-[#10B981]" : ""
+              }`}
             >
-              <div
-                className={`flex w-full rounded-md overflow-hidden transition-all duration-200 ${
-                  searchFocused ? "ring-2 ring-[#FF9900]" : ""
-                }`}
+              {/* Category selector */}
+              <select
+                className="hidden sm:block bg-[#1A3A4A] text-white text-xs px-2 h-10 border-r border-white/20 focus:outline-none cursor-pointer hover:bg-[#234d61] transition-colors"
+                aria-label="Search category"
               >
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  placeholder={t("nav.searchPlaceholder")}
-                  className="flex-1 px-3 py-2 text-sm text-[#131921] bg-white outline-none min-w-0 placeholder:text-gray-400"
-                  aria-label={t("nav.searchPlaceholder")}
-                />
-                <button
-                  type="submit"
-                  className="bg-[#FF9900] hover:bg-[#e88a00] px-4 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
-                  aria-label={t("nav.search")}
-                >
-                  <Search className="w-5 h-5 text-[#131921]" />
-                </button>
-              </div>
+                <option>All</option>
+                <option>Electronics</option>
+                <option>Clothing</option>
+                <option>Home &amp; Kitchen</option>
+                <option>Books</option>
+                <option>Sports</option>
+              </select>
+
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                placeholder={t("nav.searchPlaceholder")}
+                className="flex-1 h-10 px-3 text-sm text-gray-900 bg-white focus:outline-none placeholder:text-gray-400"
+                aria-label="Search products"
+              />
+              <button
+                type="submit"
+                className="bg-[#10B981] hover:bg-[#059669] h-10 px-4 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
+                aria-label="Search"
+              >
+                <Search className="w-5 h-5 text-white" />
+              </button>
             </form>
 
             {/* Right actions */}
             <div className="flex items-center gap-1 flex-shrink-0">
-              {/* Account */}
-              <div className="relative" ref={accountRef}>
+              {/* Language */}
+              <button className="hidden md:flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 transition-colors duration-200">
+                <span className="text-gray-400 text-[10px] leading-none">EN</span>
+                <span className="text-white text-xs font-bold leading-none mt-0.5">🌐 Language</span>
+              </button>
+
+              {/* Account dropdown */}
+              <div ref={accountRef} className="relative">
                 <button
                   onClick={() => setAccountOpen((v) => !v)}
-                  className="hidden sm:flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white transition-colors duration-200 text-white"
+                  className="flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 transition-colors duration-200"
                   aria-expanded={accountOpen}
                   aria-haspopup="true"
                 >
-                  <span className="text-[10px] text-white/70 leading-tight">{t("nav.hello")}</span>
-                  <span className="text-xs font-bold leading-tight flex items-center gap-0.5">
-                    {t("nav.accountLists")} <ChevronDown className="w-3 h-3" />
+                  <span className="text-gray-400 text-[10px] leading-none hidden sm:block">
+                    Hello, sign in
+                  </span>
+                  <span className="text-white text-xs font-bold flex items-center gap-0.5 leading-none mt-0.5">
+                    <User className="w-4 h-4 sm:hidden" />
+                    <span className="hidden sm:inline">Account &amp; Lists</span>
+                    <ChevronDown className="w-3 h-3 hidden sm:inline" />
                   </span>
                 </button>
+
                 <AnimatePresence>
                   {accountOpen && (
                     <motion.div
                       initial={{ opacity: 0, y: -8, scale: 0.97 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                      transition={{ duration: 0.18, ease: "easeOut" }}
-                      className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.18)] border border-black/5 z-50 overflow-hidden"
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-1 w-56 bg-white rounded-md shadow-xl border border-gray-200 z-50 overflow-hidden"
+                      role="menu"
                     >
                       <div className="p-3 border-b border-gray-100">
                         <Link
                           href="/account"
                           onClick={() => setAccountOpen(false)}
-                          className="block w-full text-center bg-[#FF9900] hover:bg-[#e88a00] text-[#131921] font-bold text-sm py-1.5 rounded transition-colors duration-200"
+                          className="block w-full text-center bg-[#10B981] hover:bg-[#059669] text-white text-sm font-semibold py-1.5 rounded transition-colors duration-200"
+                          role="menuitem"
                         >
-                          {t("nav.signIn")}
+                          Sign In
                         </Link>
-                        <p className="text-xs text-center text-gray-500 mt-1.5">
-                          {t("nav.newCustomer")}{" "}
-                          <Link href="/account" className="text-[#007185] hover:text-[#c7511f] hover:underline">
-                            {t("nav.startHere")}
+                        <p className="text-xs text-gray-500 text-center mt-2">
+                          New customer?{" "}
+                          <Link href="/account" className="text-[#10B981] hover:underline">
+                            Start here
                           </Link>
                         </p>
                       </div>
                       <div className="p-2">
                         {[
-                          { label: t("nav.yourAccount"), href: "/account" },
-                          { label: t("nav.yourOrders"), href: "/orders" },
-                          { label: t("nav.wishlist"), href: "/wishlist" },
+                          { label: "Your Account", href: "/account" },
+                          { label: "Your Orders", href: "/orders" },
+                          { label: "Your Wishlist", href: "/wishlist" },
+                          { label: "Order History", href: "/order-history" },
+                          { label: "Returns", href: "/returns" },
+                          { label: "Help", href: "/help" },
                         ].map((item) => (
                           <Link
                             key={item.href}
                             href={item.href}
                             onClick={() => setAccountOpen(false)}
-                            className="block px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors duration-150"
+                            className="block px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#10B981] rounded transition-colors duration-150"
+                            role="menuitem"
                           >
                             {item.label}
                           </Link>
@@ -220,176 +246,131 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
 
-              {/* Returns */}
+              {/* Orders */}
               <Link
                 href="/orders"
-                className="hidden md:flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white transition-colors duration-200 text-white"
+                className="hidden md:flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 transition-colors duration-200"
               >
-                <span className="text-[10px] text-white/70 leading-tight">{t("nav.returns")}</span>
-                <span className="text-xs font-bold leading-tight">{t("nav.orders")}</span>
+                <span className="text-gray-400 text-[10px] leading-none">Returns</span>
+                <span className="text-white text-xs font-bold leading-none mt-0.5">&amp; Orders</span>
               </Link>
 
               {/* Cart */}
               <Link
                 href="/cart"
-                className="relative flex items-center gap-1 px-2 py-1 rounded border border-transparent hover:border-white transition-colors duration-200 text-white"
-                aria-label={`${t("nav.cart")} (${cartCount} items)`}
+                className="flex items-end gap-1 px-2 py-1 rounded border border-transparent hover:border-white/40 transition-colors duration-200 relative"
+                aria-label={`Cart, ${cartCount} items`}
               >
                 <div className="relative">
-                  <ShoppingCart className="w-7 h-7" />
+                  <ShoppingCart className="w-7 h-7 text-white" />
                   {cartCount > 0 && (
-                    <motion.span
-                      key={cartCount}
-                      initial={{ scale: 0.6 }}
-                      animate={{ scale: 1 }}
-                      className="absolute -top-1.5 -right-1 bg-[#FF9900] text-[#131921] text-[10px] font-extrabold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-0.5 leading-none"
-                    >
+                    <span className="absolute -top-1.5 -right-1.5 bg-[#10B981] text-white text-[10px] font-extrabold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-0.5 leading-none">
                       {cartCount > 99 ? "99+" : cartCount}
-                    </motion.span>
+                    </span>
                   )}
                 </div>
-                <span className="hidden sm:block text-xs font-bold">{t("nav.cart")}</span>
+                <span className="text-white text-xs font-bold leading-none mb-0.5 hidden sm:inline">
+                  Cart
+                </span>
               </Link>
 
               {/* Mobile menu toggle */}
               <button
                 onClick={() => setMenuOpen((v) => !v)}
-                className="sm:hidden p-2 text-white rounded border border-transparent hover:border-white transition-colors duration-200"
+                className="md:hidden p-2 rounded border border-transparent hover:border-white/40 transition-colors duration-200"
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
                 aria-expanded={menuOpen}
               >
-                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {menuOpen ? (
+                  <X className="w-5 h-5 text-white" />
+                ) : (
+                  <Menu className="w-5 h-5 text-white" />
+                )}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Secondary nav bar */}
-        <div className="bg-[#232F3E]">
-          <div className="max-w-[1500px] mx-auto px-3 sm:px-4 flex items-center gap-1 h-10 overflow-x-auto scrollbar-hide">
-            <button className="flex items-center gap-1.5 text-white text-sm font-medium px-2 py-1 rounded hover:bg-white/10 transition-colors duration-200 whitespace-nowrap flex-shrink-0">
+        {/* Secondary nav */}
+        <div className="bg-[#1A3A4A] hidden md:block">
+          <div className="max-w-[1500px] mx-auto px-4 flex items-center gap-1 h-10 overflow-x-auto scrollbar-none">
+            <button className="flex items-center gap-1 text-white text-sm font-semibold px-2 py-1 rounded hover:bg-white/10 transition-colors duration-150 whitespace-nowrap flex-shrink-0">
               <Menu className="w-4 h-4" />
-              {t("nav.allCategories")}
+              All
             </button>
-            {navItems.map((item) => (
+            {[
+              { label: "Today's Deals", href: "#deals" },
+              { label: "Electronics", href: "/products?category=electronics" },
+              { label: "Fashion", href: "/products?category=clothing" },
+              { label: "Home & Kitchen", href: "/products?category=home" },
+              { label: "Books", href: "/products?category=books" },
+              { label: "Sports", href: "/products?category=sports" },
+              { label: "Toys", href: "/products?category=toys" },
+              { label: "Beauty", href: "/products?category=beauty" },
+              { label: "Sell", href: "/sell" },
+              { label: "Help", href: "/help" },
+            ].map((item) => (
               <Link
                 key={item.href}
-                href={
-                  item.type === "anchor"
-                    ? pathname === "/"
-                      ? item.href
-                      : "/" + item.href
-                    : item.href
-                }
-                onClick={(e) => handleNavClick(e, item.href, item.type)}
-                className={`text-white text-sm px-2 py-1 rounded hover:bg-white/10 transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
-                  pathname === item.href ? "font-bold underline underline-offset-2" : "font-normal"
-                }`}
+                href={item.href}
+                className="text-white text-sm px-2 py-1 rounded hover:bg-white/10 hover:text-[#10B981] transition-colors duration-150 whitespace-nowrap flex-shrink-0"
               >
                 {item.label}
               </Link>
             ))}
-            <Link
-              href="/products?deal=true"
-              className="text-white text-sm px-2 py-1 rounded hover:bg-white/10 transition-colors duration-200 whitespace-nowrap flex-shrink-0 font-medium"
-            >
-              {t("nav.todaysDeals")}
-            </Link>
-            <Link
-              href="/products?category=electronics"
-              className="text-white text-sm px-2 py-1 rounded hover:bg-white/10 transition-colors duration-200 whitespace-nowrap flex-shrink-0"
-            >
-              {t("nav.electronics")}
-            </Link>
-            <Link
-              href="/products?category=fashion"
-              className="text-white text-sm px-2 py-1 rounded hover:bg-white/10 transition-colors duration-200 whitespace-nowrap flex-shrink-0"
-            >
-              {t("nav.fashion")}
-            </Link>
-            <Link
-              href="/products?category=home"
-              className="text-white text-sm px-2 py-1 rounded hover:bg-white/10 transition-colors duration-200 whitespace-nowrap flex-shrink-0"
-            >
-              {t("nav.homeKitchen")}
-            </Link>
           </div>
         </div>
-      </header>
 
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: -280 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -280 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="fixed inset-0 z-40 flex"
-          >
-            <div className="w-72 bg-[#131921] h-full overflow-y-auto shadow-2xl flex flex-col">
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <div className="flex items-center gap-1">
-                  <User className="w-5 h-5 text-white" />
-                  <span className="text-white font-bold text-sm">{t("nav.hello")}</span>
-                </div>
-                <button
-                  onClick={() => setMenuOpen(false)}
-                  className="text-white p-1 rounded hover:bg-white/10 transition-colors"
-                  aria-label="Close menu"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <nav className="flex-1 p-3">
-                <p className="text-[#FF9900] text-xs font-bold uppercase tracking-wider px-2 mb-2">
-                  {t("nav.shopBy")}
-                </p>
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.22, ease: "easeInOut" }}
+              className="md:hidden bg-[#1A3A4A] overflow-hidden"
+            >
+              <nav className="flex flex-col py-2">
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
-                    href={
-                      item.type === "anchor"
-                        ? pathname === "/"
-                          ? item.href
-                          : "/" + item.href
-                        : item.href
-                    }
+                    href={item.href}
                     onClick={(e) => handleNavClick(e, item.href, item.type)}
-                    className="flex items-center justify-between text-white text-sm py-2.5 px-2 rounded hover:bg-white/10 transition-colors duration-200 border-b border-white/5"
+                    className={`px-4 py-3 text-sm font-medium transition-colors duration-150 border-b border-white/10 last:border-0 ${
+                      pathname === item.href
+                        ? "text-[#10B981] bg-white/5"
+                        : "text-white hover:text-[#10B981] hover:bg-white/5"
+                    }`}
                   >
                     {item.label}
-                    <ChevronDown className="w-4 h-4 -rotate-90 text-white/50" />
                   </Link>
                 ))}
-              </nav>
-              <div className="p-3 border-t border-white/10">
                 <Link
                   href="/account"
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 text-white text-sm py-2 px-2 rounded hover:bg-white/10 transition-colors"
+                  className="px-4 py-3 text-sm font-medium text-white hover:text-[#10B981] hover:bg-white/5 transition-colors duration-150 border-b border-white/10"
                 >
-                  <User className="w-4 h-4" />
-                  {t("nav.yourAccount")}
+                  Account
                 </Link>
                 <Link
-                  href="/orders"
+                  href="/cart"
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 text-white text-sm py-2 px-2 rounded hover:bg-white/10 transition-colors"
+                  className="px-4 py-3 text-sm font-medium text-white hover:text-[#10B981] hover:bg-white/5 transition-colors duration-150 flex items-center gap-2"
                 >
-                  <Bell className="w-4 h-4" />
-                  {t("nav.yourOrders")}
+                  <ShoppingCart className="w-4 h-4" />
+                  Cart
+                  {cartCount > 0 && (
+                    <span className="bg-[#10B981] text-white text-[10px] font-extrabold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-0.5">
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </span>
+                  )}
                 </Link>
-              </div>
-            </div>
-            <div
-              className="flex-1 bg-black/50 backdrop-blur-sm"
-              onClick={() => setMenuOpen(false)}
-              aria-hidden="true"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
     </>
   );
 }
